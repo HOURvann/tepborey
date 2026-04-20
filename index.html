@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>វត្តទេពបុរី — បញ្ជីឈ្មោះម្ចាស់សទ្ធា</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&family=Moul&display=swap" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#D4AF37">
+
+  <style>
+    :root {
+      --gold    : #D4AF37;
+      --gold2   : #f0d060;
+      --gold3   : #c8960c;
+      --navy    : #0a1628;
+      --navy2   : #0d1f38;
+      --blue    : #0047AB;
+      --bg      : #f1f5f9;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: 'Kantumruy Pro', sans-serif; background: var(--bg); min-height: 100vh; }
+    .font-moul { font-family: 'Moul', cursive; }
+
+    /* ─── Page header ─── */
+    .page-header { background:#fff; border-bottom:1px solid #e5e7eb; position:sticky; top:0; z-index:500; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .temple-logo-sm { width:44px; height:44px; border-radius:50%; border:2px solid var(--gold); object-fit:cover; }
+    .header-title { font-size:.95rem; font-weight:700; color:var(--blue); }
+    .btn-register { background:var(--gold); color:#fff; border:none; padding:9px 18px; border-radius:50px; font-weight:700; font-size:.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:7px; transition:.2s; box-shadow:0 4px 12px rgba(212,175,55,.35); }
+    #lockNotice { display:none; background:#fef3c7; border:1px solid #fcd34d; border-radius:12px; padding:10px 18px; color:#92400e; font-size:.82rem; font-weight:600; margin:0 16px 4px; align-items:center; gap:8px; }
+    .search-wrap { padding:14px 16px 8px; position:sticky; top:73px; z-index:400; background:var(--bg); }
+    .search-input { width:100%; border-radius:50px; padding:11px 16px 11px 44px; border:1.5px solid #e2e8f0; font-size:.9rem; background:#fff; }
+    .search-input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,175,55,.15); }
+    .stats-bar { display:flex; gap:10px; padding:8px 16px 12px; overflow-x:auto; }
+    .stat-pill { background:#fff; border-radius:12px; padding:8px 14px; font-size:.75rem; font-weight:700; border:1px solid #e5e7eb; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+    .members-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; padding:0 16px 100px; }
+    .member-card { background:#fff; border-radius:16px; border:1.5px solid #e5e7eb; padding:16px; cursor:pointer; transition:all .18s; display:flex; align-items:center; gap:14px; position:relative; overflow:hidden; }
+    .member-card:hover { border-color:var(--gold); box-shadow:0 6px 20px rgba(0,0,0,.08); transform:translateY(-2px); }
+    .member-card.is-picked { border-color:#22c55e; }
+    .member-card.is-partial { border-color:#f59e0b; }
+    .card-avatar { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; color:#fff; flex-shrink:0; font-family:'Moul',cursive; }
+    .card-body-inner { flex:1; min-width:0; }
+    .card-name { font-weight:700; font-size:.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .card-village { font-size:.78rem; color:#64748b; margin-top:1px; }
+    .card-queue { font-size:.8rem; font-weight:700; color:#1e40af; margin-top:4px; }
+    .card-monks { font-size:.75rem; font-weight:700; margin-top:4px; }
+    .status-pill { font-size:.72rem; padding:4px 11px; border-radius:50px; font-weight:700; flex-shrink:0; }
+    .pill-pending { background:#f1f5f9; color:#64748b; }
+    .pill-ready   { background:#dbeafe; color:#1e40af; }
+    .pill-partial { background:#fff7ed; color:#c2410c; }
+    .pill-picked  { background:#dcfce7; color:#166534; }
+    .empty-state { text-align:center; padding:60px 20px; color:#94a3b8; }
+
+    /* ─── Village Filter Pills ─── */
+    .village-filter-wrap {
+      padding: 0 16px 10px;
+      position: sticky;
+      top: 120px;
+      z-index: 390;
+      background: var(--bg);
+    }
+    .village-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .village-pills::-webkit-scrollbar { display: none; }
+    .vpill {
+      display: inline-flex; align-items: center; gap: 5px;
+      white-space: nowrap;
+      padding: 7px 16px;
+      border-radius: 50px;
+      font-size: .78rem; font-weight: 700;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      color: #64748b;
+      cursor: pointer;
+      transition: all .18s;
+      flex-shrink: 0;
+      font-family: 'Kantumruy Pro', sans-serif;
+    }
+    .vpill:hover { border-color: var(--gold); color: #92400e; }
+    .vpill.active {
+      background: linear-gradient(135deg, #BF953F, #D4AF37);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(212,175,55,.4);
+    }
+    .vpill .vpill-count {
+      background: rgba(0,0,0,.12);
+      border-radius: 50px;
+      padding: 1px 7px;
+      font-size: .7rem;
+    }
+    .vpill.active .vpill-count { background: rgba(255,255,255,.25); }
+
+    /* ══════════════════════════════════════════════════
+       PREMIUM DIGITAL CARD — Elegant Gold Border Frame
+    ══════════════════════════════════════════════════ */
+    .modal-content { border-radius:24px; border:none; overflow:hidden; background:transparent; box-shadow:none; }
+    .modal-body { padding:0; background:transparent; }
+
+    /* ── Outer glow wrapper ── */
+    .card-glow-wrap {
+      position:relative;
+      border-radius:22px;
+      padding:3px; /* space for animated glow border */
+      background: linear-gradient(135deg,
+        #8B6914 0%, #D4AF37 20%, #F5E27A 35%, #D4AF37 50%,
+        #8B6914 65%, #D4AF37 80%, #F5E27A 95%, #8B6914 100%);
+      box-shadow:
+        0 0 30px rgba(212,175,55,.6),
+        0 0 60px rgba(212,175,55,.2),
+        inset 0 0 20px rgba(0,0,0,.3);
+    }
+
+    /* ── Main card body ── */
+    .digital-card {
+      background: radial-gradient(ellipse at 20% 10%, #0e2240 0%, #0a1628 50%, #060f1e 100%);
+      border-radius:20px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    /* ── Decorative gold border inside card ── */
+    .card-inner-border {
+      position:absolute; inset:10px;
+      border:1.5px solid rgba(212,175,55,.35);
+      border-radius:14px;
+      pointer-events:none; z-index:2;
+    }
+    /* Double inner border */
+    .card-inner-border::after {
+      content:'';
+      position:absolute; inset:4px;
+      border:1px solid rgba(212,175,55,.15);
+      border-radius:10px;
+    }
+
+    /* ── CORNER ORNAMENTS — CSS-drawn ── */
+    .corner-ornament {
+      position:absolute; width:70px; height:70px;
+      z-index:5; pointer-events:none;
+    }
+    .corner-ornament svg { width:100%; height:100%; }
+    .co-tl { top:0;    left:0;  }
+    .co-tr { top:0;    right:0;  transform:scaleX(-1); }
+    .co-bl { bottom:0; left:0;   transform:scaleY(-1); }
+    .co-br { bottom:0; right:0;  transform:scale(-1,-1); }
+
+    /* ── Top diamonds row ── */
+    .card-diamonds {
+      display:flex; justify-content:center; align-items:center; gap:8px;
+      padding:18px 0 6px;
+      position:relative; z-index:10;
+    }
+    .card-diamonds::before,
+    .card-diamonds::after {
+      content:'';
+      flex:1; height:1px;
+      background:linear-gradient(90deg, transparent, rgba(212,175,55,.5));
+      margin:0 12px;
+    }
+    .card-diamonds::after {
+      background:linear-gradient(90deg, rgba(212,175,55,.5), transparent);
+    }
+    .dmd { width:6px; height:6px; background:var(--gold); transform:rotate(45deg); }
+    .dmd-lg { width:9px; height:9px; }
+
+    /* ── Header row ── */
+    .card-header-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:6px 22px 10px;
+      position:relative; z-index:10;
+    }
+    .card-temple-name { font-family:'Moul',cursive; font-size:.82rem; color:var(--gold); }
+    .card-temple-sub  { font-size:.56rem; color:rgba(212,175,55,.5); letter-spacing:.08em; text-transform:uppercase; margin-top:1px; }
+    .card-logo-circle {
+      width:38px; height:38px; border-radius:50%;
+      border:2px solid var(--gold); overflow:hidden;
+      background:rgba(212,175,55,.08);
+    }
+    .card-logo-circle img { width:100%; height:100%; object-fit:cover; }
+
+    /* ── Gold horizontal line ── */
+    .gold-divider {
+      height:1.5px;
+      background:linear-gradient(90deg, transparent 2%, var(--gold3) 15%, var(--gold) 50%, var(--gold3) 85%, transparent 98%);
+      margin:0 18px;
+      position:relative; z-index:10;
+    }
+    .gold-divider.thin {
+      height:1px;
+      background:linear-gradient(90deg, transparent 5%, rgba(212,175,55,.4) 30%, rgba(212,175,55,.6) 50%, rgba(212,175,55,.4) 70%, transparent 95%);
+    }
+
+    /* ── Rooster circle ── */
+    .card-rooster-wrap {
+      display:flex; justify-content:center;
+      padding:14px 0 6px;
+      position:relative; z-index:10;
+    }
+    .card-rooster-ring {
+      width:82px; height:82px; border-radius:50%;
+      border:2.5px solid var(--gold);
+      box-shadow:0 0 0 4px rgba(212,175,55,.15), 0 0 0 8px rgba(212,175,55,.05);
+      overflow:hidden;
+      background:rgba(212,175,55,.06);
+    }
+    .card-rooster-ring img {
+      width:100%; height:100%;
+      object-fit:cover; object-position:center top;
+    }
+
+    /* ── Member name ── */
+    .card-member-name {
+      font-family:'Moul',cursive;
+      font-size:1.05rem; color:var(--gold);
+      text-align:center; padding:10px 22px 4px;
+      line-height:1.5;
+      text-shadow:0 0 20px rgba(212,175,55,.4), 0 2px 8px rgba(0,0,0,.5);
+      position:relative; z-index:10;
+    }
+    .card-village-sub {
+      font-size:.78rem; color:rgba(255,255,255,.45);
+      text-align:center; padding-bottom:10px;
+      position:relative; z-index:10;
+    }
+
+    /* ── Info rows ── */
+    .card-info-block {
+      padding:0 22px 6px;
+      position:relative; z-index:10;
+    }
+    .card-info-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:8px 0;
+      border-bottom:1px solid rgba(212,175,55,.1);
+    }
+    .card-info-row:last-child { border-bottom:none; }
+    .ci-label { font-size:.68rem; color:rgba(212,175,55,.55); font-weight:600; letter-spacing:.04em; }
+    .ci-value { font-size:.86rem; color:var(--gold); font-weight:700; text-align:right; max-width:65%; }
+
+    /* Status capsule */
+    .status-capsule {
+      display:inline-block; padding:4px 18px; border-radius:50px;
+      font-size:.76rem; font-weight:800;
+    }
+    .sc-pending { background:#f97316; color:#7c2d12; }
+    .sc-ready   { background:#3b82f6; color:white; }
+    .sc-partial { background:#f59e0b; color:#451a03; }
+    .sc-picked  { background:#22c55e; color:#052e16; }
+
+    /* ── QR Section ── */
+    .card-qr-section {
+      margin:10px 18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(212,175,55,.2);
+      border-radius:14px;
+      padding:12px 14px;
+      display:flex; align-items:center; gap:14px;
+      position:relative; z-index:10;
+    }
+    .card-qr-box {
+      background:white; border-radius:10px;
+      padding:5px; flex-shrink:0;
+    }
+    .card-qr-box canvas,
+    .card-qr-box img { width:78px!important; height:78px!important; display:block; }
+    .card-qr-label { font-size:.7rem; color:rgba(212,175,55,.8); line-height:1.6; }
+    .card-qr-label b { color:var(--gold); font-family:'Moul',cursive; font-size:.74rem; display:block; margin-bottom:2px; }
+    .card-qr-none {
+      text-align:center; color:rgba(212,175,55,.3);
+      font-size:.72rem; padding:10px 18px;
+      position:relative; z-index:10;
+    }
+
+    /* ── Bottom diamonds + footer ── */
+    .card-footer {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:8px 22px 16px;
+      position:relative; z-index:10;
+    }
+    .cf-date { font-size:.6rem; color:rgba(212,175,55,.35); }
+    .cf-seal { font-family:'Moul',cursive; font-size:.6rem; color:rgba(212,175,55,.4); }
+
+    /* ── Action buttons outside card ── */
+    .card-actions {
+      background:#0a1628;
+      padding:14px 20px 20px;
+      display:flex; gap:10px; justify-content:center;
+      border-radius:0 0 21px 21px;
+    }
+    .btn-gold-save {
+      background:linear-gradient(135deg,#BF953F,#FCF6BA,#B38728,#FBF5B7,#AA771C);
+      border:none; color:#0D1B2A; font-weight:800;
+      padding:12px 32px; border-radius:50px; font-size:.92rem;
+      box-shadow:0 4px 16px rgba(212,175,55,.4);
+      transition:.2s; cursor:pointer;
+      font-family:'Kantumruy Pro',sans-serif;
+    }
+    .btn-gold-save:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(212,175,55,.55); }
+    .btn-close-card {
+      background:transparent; border:1px solid rgba(255,255,255,.15);
+      color:rgba(255,255,255,.5); border-radius:50px; padding:12px 20px;
+      font-size:.85rem; cursor:pointer; transition:.2s;
+      font-family:'Kantumruy Pro',sans-serif;
+    }
+    .btn-close-card:hover { border-color:rgba(255,255,255,.4); color:white; }
+
+    /* Save overlay removed — direct download used */
+
+    @media(max-width:440px) {
+      .card-member-name { font-size:.92rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="page-header">
+  <div class="d-flex align-items-center" style="gap:10px">
+    <img src="assets/images/Gemini_Generated_Image_.png" alt="logo" class="temple-logo-sm">
+    <div>
+      <div class="header-title font-moul">វត្តទេពបុរី</div>
+      <div style="font-size:.7rem;color:#6b7280">បញ្ជីឈ្មោះម្ចាស់សទ្ធា</div>
+    </div>
+  </div>
+  <a href="register.html" class="btn-register" id="registerBtn">
+    <i class="fa-solid fa-user-plus"></i><span>ចុះឈ្មោះ</span>
+  </a>
+</header>
+
+<div id="lockNotice">
+  <i class="fa-solid fa-lock"></i> ការចុះឈ្មោះបានបិទ
+</div>
+
+<div class="search-wrap">
+  <div style="position:relative">
+    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.9rem"></i>
+    <input type="text" id="searchInput" class="search-input" placeholder="ស្វែងរកឈ្មោះ, ភូមិ..." oninput="applyFilter()">
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-pill"><span class="text-primary"><i class="fa-solid fa-users"></i></span><span id="s-total">0</span> នាក់</div>
+  <div class="stat-pill"><span style="color:#94a3b8"><i class="fa-solid fa-hourglass-half"></i></span><span id="s-pending">0</span> រង់ចាំ</div>
+  <div class="stat-pill"><span class="text-info"><i class="fa-solid fa-hashtag"></i></span><span id="s-ready">0</span> ត្រៀម</div>
+  <div class="stat-pill"><span style="color:#f59e0b"><i class="fa-solid fa-spinner"></i></span><span id="s-partial">0</span> ខ្វះ</div>
+  <div class="stat-pill"><span class="text-success"><i class="fa-solid fa-circle-check"></i></span><span id="s-picked">0</span> FULL</div>
+</div>
+
+<!-- ── Village Filter Pills ── -->
+<div class="village-filter-wrap">
+  <div class="village-pills" id="villagePills">
+    <button class="vpill active" data-village="__all__">
+      <i class="fa-solid fa-border-all" style="font-size:.72rem"></i> ទាំងអស់
+    </button>
+  </div>
+</div>
+
+<div id="loading" class="text-center py-5">
+  <div class="spinner-border text-warning"></div>
+  <div class="small text-muted mt-2">កំពុងផ្ទុក...</div>
+</div>
+
+<div class="members-grid" id="membersGrid" style="display:none"></div>
+<div id="emptyState" class="empty-state" style="display:none">
+  <i class="fa-solid fa-inbox fa-3x mb-3"></i><p>រកមិនឃើញ</p>
+</div>
+
+<!-- ══ DETAIL MODAL ══ -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:390px">
+    <div class="modal-content">
+
+      <!-- Dismiss X button -->
+      <div style="position:absolute;top:14px;right:14px;z-index:999">
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-0">
+
+        <!-- ══ CARD GLOW WRAPPER ══ -->
+        <div class="card-glow-wrap">
+
+          <!-- ══ DIGITAL CARD ══ -->
+          <div class="digital-card" id="digitalCard">
+
+            <!-- Inner double border -->
+            <div class="card-inner-border"></div>
+
+            <!-- ── CORNER ORNAMENTS (CSS SVG) ── -->
+            <!-- Top-Left -->
+            <div class="corner-ornament co-tl">
+              <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="cg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f5e27a"/>
+                    <stop offset="40%" stop-color="#D4AF37"/>
+                    <stop offset="100%" stop-color="#8B6914"/>
+                  </linearGradient>
+                </defs>
+                <!-- Curved branch top -->
+                <path d="M8,8 Q8,2 14,2 Q20,2 20,8 Q20,14 14,14 Q8,14 8,8Z" fill="url(#cg1)" opacity=".9"/>
+                <path d="M14,14 Q14,20 20,20" stroke="url(#cg1)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <!-- Long vertical line -->
+                <path d="M8,14 L8,70" stroke="url(#cg1)" stroke-width="1.5" fill="none" opacity=".6"/>
+                <!-- Long horizontal line -->
+                <path d="M14,8 L72,8" stroke="url(#cg1)" stroke-width="1.5" fill="none" opacity=".6"/>
+                <!-- Leaf cluster -->
+                <ellipse cx="28" cy="28" rx="7" ry="4" fill="url(#cg1)" opacity=".8" transform="rotate(-45,28,28)"/>
+                <ellipse cx="34" cy="22" rx="6" ry="3.5" fill="url(#cg1)" opacity=".7" transform="rotate(-60,34,22)"/>
+                <ellipse cx="22" cy="34" rx="6" ry="3.5" fill="url(#cg1)" opacity=".7" transform="rotate(-30,22,34)"/>
+                <circle cx="28" cy="28" r="3" fill="url(#cg1)" opacity=".9"/>
+                <!-- Spiral -->
+                <path d="M14,14 Q18,18 14,22 Q10,26 14,30" stroke="url(#cg1)" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/>
+                <!-- Small dots -->
+                <circle cx="8" cy="40" r="1.5" fill="url(#cg1)" opacity=".5"/>
+                <circle cx="8" cy="55" r="1.5" fill="url(#cg1)" opacity=".4"/>
+                <circle cx="40" cy="8" r="1.5" fill="url(#cg1)" opacity=".5"/>
+                <circle cx="55" cy="8" r="1.5" fill="url(#cg1)" opacity=".4"/>
+              </svg>
+            </div>
+            <!-- Top-Right (mirror) -->
+            <div class="corner-ornament co-tr">
+              <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="cg2" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#f5e27a"/>
+                    <stop offset="40%" stop-color="#D4AF37"/>
+                    <stop offset="100%" stop-color="#8B6914"/>
+                  </linearGradient>
+                </defs>
+                <path d="M72,8 Q72,2 66,2 Q60,2 60,8 Q60,14 66,14 Q72,14 72,8Z" fill="url(#cg2)" opacity=".9"/>
+                <path d="M66,14 Q66,20 60,20" stroke="url(#cg2)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M72,14 L72,70" stroke="url(#cg2)" stroke-width="1.5" fill="none" opacity=".6"/>
+                <path d="M66,8 L8,8" stroke="url(#cg2)" stroke-width="1.5" fill="none" opacity=".6"/>
+                <ellipse cx="52" cy="28" rx="7" ry="4" fill="url(#cg2)" opacity=".8" transform="rotate(45,52,28)"/>
+                <ellipse cx="46" cy="22" rx="6" ry="3.5" fill="url(#cg2)" opacity=".7" transform="rotate(60,46,22)"/>
+                <ellipse cx="58" cy="34" rx="6" ry="3.5" fill="url(#cg2)" opacity=".7" transform="rotate(30,58,34)"/>
+                <circle cx="52" cy="28" r="3" fill="url(#cg2)" opacity=".9"/>
+                <path d="M66,14 Q62,18 66,22 Q70,26 66,30" stroke="url(#cg2)" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/>
+                <circle cx="72" cy="40" r="1.5" fill="url(#cg2)" opacity=".5"/>
+                <circle cx="72" cy="55" r="1.5" fill="url(#cg2)" opacity=".4"/>
+                <circle cx="40" cy="8" r="1.5" fill="url(#cg2)" opacity=".5"/>
+                <circle cx="25" cy="8" r="1.5" fill="url(#cg2)" opacity=".4"/>
+              </svg>
+            </div>
+            <!-- Bottom-Left -->
+            <div class="corner-ornament co-bl">
+              <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="cg3" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#f5e27a"/>
+                    <stop offset="40%" stop-color="#D4AF37"/>
+                    <stop offset="100%" stop-color="#8B6914"/>
+                  </linearGradient>
+                </defs>
+                <path d="M8,72 Q8,78 14,78 Q20,78 20,72 Q20,66 14,66 Q8,66 8,72Z" fill="url(#cg3)" opacity=".9"/>
+                <path d="M14,66 Q14,60 20,60" stroke="url(#cg3)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M8,66 L8,10" stroke="url(#cg3)" stroke-width="1.5" fill="none" opacity=".6"/>
+                <path d="M14,72 L72,72" stroke="url(#cg3)" stroke-width="1.5" fill="none" opacity=".6"/>
+                <ellipse cx="28" cy="52" rx="7" ry="4" fill="url(#cg3)" opacity=".8" transform="rotate(45,28,52)"/>
+                <ellipse cx="34" cy="58" rx="6" ry="3.5" fill="url(#cg3)" opacity=".7" transform="rotate(60,34,58)"/>
+                <ellipse cx="22" cy="46" rx="6" ry="3.5" fill="url(#cg3)" opacity=".7" transform="rotate(30,22,46)"/>
+                <circle cx="28" cy="52" r="3" fill="url(#cg3)" opacity=".9"/>
+                <circle cx="8" cy="40" r="1.5" fill="url(#cg3)" opacity=".5"/>
+                <circle cx="40" cy="72" r="1.5" fill="url(#cg3)" opacity=".5"/>
+                <circle cx="55" cy="72" r="1.5" fill="url(#cg3)" opacity=".4"/>
+              </svg>
+            </div>
+            <!-- Bottom-Right -->
+            <div class="corner-ornament co-br">
+              <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="cg4" x1="100%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#f5e27a"/>
+                    <stop offset="40%" stop-color="#D4AF37"/>
+                    <stop offset="100%" stop-color="#8B6914"/>
+                  </linearGradient>
+                </defs>
+                <path d="M72,72 Q72,78 66,78 Q60,78 60,72 Q60,66 66,66 Q72,66 72,72Z" fill="url(#cg4)" opacity=".9"/>
+                <path d="M66,66 Q66,60 60,60" stroke="url(#cg4)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M72,66 L72,10" stroke="url(#cg4)" stroke-width="1.5" fill="none" opacity=".6"/>
+                <path d="M66,72 L8,72" stroke="url(#cg4)" stroke-width="1.5" fill="none" opacity=".6"/>
+                <ellipse cx="52" cy="52" rx="7" ry="4" fill="url(#cg4)" opacity=".8" transform="rotate(-45,52,52)"/>
+                <ellipse cx="46" cy="58" rx="6" ry="3.5" fill="url(#cg4)" opacity=".7" transform="rotate(-60,46,58)"/>
+                <ellipse cx="58" cy="46" rx="6" ry="3.5" fill="url(#cg4)" opacity=".7" transform="rotate(-30,58,46)"/>
+                <circle cx="52" cy="52" r="3" fill="url(#cg4)" opacity=".9"/>
+                <circle cx="72" cy="40" r="1.5" fill="url(#cg4)" opacity=".5"/>
+                <circle cx="40" cy="72" r="1.5" fill="url(#cg4)" opacity=".5"/>
+                <circle cx="25" cy="72" r="1.5" fill="url(#cg4)" opacity=".4"/>
+              </svg>
+            </div>
+
+            <!-- ── Top diamonds ornament ── -->
+            <div class="card-diamonds">
+              <div class="dmd"></div>
+              <div class="dmd dmd-lg"></div>
+              <div class="dmd"></div>
+            </div>
+
+            <!-- ── Temple header ── -->
+            <div class="card-header-row">
+              <div>
+                <div class="card-temple-name">វត្តទេពបុរី</div>
+                <div class="card-temple-sub">TEPBOREY PAGODA</div>
+              </div>
+              <div class="card-logo-circle">
+                <img src="assets/images/Gemini_Generated_Image_.png" alt="logo">
+              </div>
+            </div>
+
+            <!-- ── Top gold line ── -->
+            <div class="gold-divider"></div>
+
+            <!-- ── Rooster image circle ── -->
+            <div class="card-rooster-wrap" style="padding-top:16px">
+              <div class="card-rooster-ring">
+                <img
+                  src="https://media.sketchfab.com/models/f8435d2ff53f4f0091a181e1c8fbdd4f/thumbnails/34e83f0ae13a496cb113a3061faf4478/d6592bf56dfc4bc5be161d1ae934ec8a.jpeg"
+                  alt="rooster"
+                  crossorigin="anonymous"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                >
+                <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:38px">🐓</div>
+              </div>
+            </div>
+
+            <!-- ── Member name ── -->
+            <div class="card-member-name" id="dc-name">—</div>
+            <div class="card-village-sub" id="dc-village-sub">—</div>
+
+            <!-- ── Middle gold line ── -->
+            <div class="gold-divider thin"></div>
+
+            <!-- ── Info rows ── -->
+            <div class="card-info-block">
+              <div id="dc-queue-row" style="display:none;flex-direction:column;align-items:center;padding:12px 0 8px;border-bottom:1px solid rgba(212,175,55,.15)">
+                <span id="dc-queue" style="font-size:2.8rem;font-family:'Moul',cursive;color:#f0d060;letter-spacing:.1em;line-height:1.1;text-shadow:0 0 24px rgba(240,208,96,.55),0 2px 10px rgba(0,0,0,.6)">—</span>
+              </div>
+              <div class="card-info-row">
+                <span class="ci-label">ភូមិ / អាសយដ្ឋាន</span>
+                <span class="ci-value" id="dc-village">—</span>
+              </div>
+              <div class="card-info-row">
+                <span class="ci-label">ចំនួនព្រះសង្ឃ</span>
+                <span class="ci-value" id="dc-monks">1 អង្គ</span>
+              </div>
+              <div class="card-info-row">
+                <span class="ci-label">ស្ថានភាព</span>
+                <span class="ci-value">
+                  <span class="status-capsule" id="dc-status-badge">រង់ចាំ</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- ── QR section ── -->
+            <div class="card-qr-section" id="dc-qr-section">
+              <div class="card-qr-box" id="dc-qr"></div>
+              <div class="card-qr-label">
+                <b>ស្កែន QR ផ្ទៀងផ្ទាត់</b>
+                ក្នុងប្រព័ន្ធ<br>
+                វត្ត<span style="font-family:'Moul',cursive">ទេពបុរី</span>
+              </div>
+            </div>
+            <!-- No QR placeholder -->
+            <div class="card-qr-none" id="dc-qr-none" style="display:none">
+              <i class="fa-solid fa-clock me-1"></i> QR នឹងបង្ហាញ ពេលព្រះសង្ឃចាប់ស្លាក
+            </div>
+
+            <!-- ── Bottom diamonds + footer ── -->
+            <div class="gold-divider thin" style="margin-top:10px"></div>
+            <div class="card-diamonds" style="padding:8px 0 4px">
+              <div class="dmd"></div>
+              <div class="dmd dmd-lg"></div>
+              <div class="dmd"></div>
+            </div>
+            <div class="card-footer">
+              <span class="cf-date" id="dc-date">2026-04-18</span>
+              <span class="cf-seal">🏛 TEPBOREY</span>
+            </div>
+
+          </div><!-- /digital-card -->
+        </div><!-- /card-glow-wrap -->
+
+        <!-- ── Action buttons ── -->
+        <div class="card-actions">
+          <button class="btn-close-card" data-bs-dismiss="modal">បិទ</button>
+          <button class="btn-gold-save" onclick="saveCard()">
+            <i class="fa-solid fa-download me-2"></i> Save Card
+          </button>
+        </div>
+
+      </div><!-- /modal-body -->
+    </div>
+  </div>
+</div>
+
+<!-- Save overlay -->
+<!-- save-overlay removed: direct download used instead -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+<script>
+let allMembers = [];
+let activeVillage = '__all__';
+const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+const BASE_URL = (() => {
+  const s = (localStorage.getItem('tepborey_qr_base_url')||'').replace('/monk.html','');
+  return (s && !s.includes('127.0.0.1') && !s.includes('localhost')) ? s : window.location.origin;
+})();
+
+/* ── Real-time ── */
+DB.listenToMembers(members => {
+  allMembers = members;
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('membersGrid').style.display = '';
+  updateStats(); buildVillagePills(); applyFilter();
+});
+
+DB.listenToLock(locked => {
+  const n = document.getElementById('lockNotice'), b = document.getElementById('registerBtn');
+  n.style.display = locked ? 'flex' : 'none';
+  b.style.opacity = locked ? '.4' : ''; b.style.pointerEvents = locked ? 'none' : '';
+});
+
+function updateStats() {
+  document.getElementById('s-total').textContent   = allMembers.length;
+  document.getElementById('s-pending').textContent = allMembers.filter(m=>m.status==='pending').length;
+  document.getElementById('s-ready').textContent   = allMembers.filter(m=>m.status==='ready').length;
+  document.getElementById('s-partial').textContent = allMembers.filter(m=>m.status==='partial').length;
+  document.getElementById('s-picked').textContent  = allMembers.filter(m=>m.status==='picked').length;
+}
+
+function applyFilter() {
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  let f = allMembers.filter(m => (m.name+(m.village||'')).toLowerCase().includes(q));
+  if (activeVillage !== '__all__') {
+    if (activeVillage === '__none__') {
+      f = f.filter(m => !m.village || m.village.trim() === '');
+    } else {
+      f = f.filter(m => firstVillage(m.village) === activeVillage);
+    }
+  }
+  // Sort: newest registration first (by Firestore timestamp or createdAt)
+  f = [...f].sort((a,b) => {
+    const ta = (a.createdAt && a.createdAt.seconds) ? a.createdAt.seconds
+             : (a.createdAt ? new Date(a.createdAt)/1000 : 0);
+    const tb = (b.createdAt && b.createdAt.seconds) ? b.createdAt.seconds
+             : (b.createdAt ? new Date(b.createdAt)/1000 : 0);
+    return tb - ta;
+  });
+  document.getElementById('emptyState').style.display = f.length ? 'none' : 'block';
+  document.getElementById('membersGrid').style.display = f.length ? '' : 'none';
+  renderGrid(f);
+}
+
+// Extract first village — "ខ្នារ និងភ្នំពេញ" → "ខ្នារ"
+function firstVillage(raw) {
+  if (!raw) return '';
+  // Split on: / , | ។ newline OR Khmer "និង"
+  const parts = raw.split(/[\/,|។\n]|\s*និង\s*/);
+  return parts[0].trim();
+}
+
+function buildVillagePills() {
+  // Collect unique villages (using first village only)
+  const villageMap = {};
+  allMembers.forEach(m => {
+    const v = firstVillage(m.village);
+    if (v) {
+      villageMap[v] = (villageMap[v]||0) + 1;
+    } else {
+      villageMap['__none__'] = (villageMap['__none__']||0) + 1;
+    }
+    // (firstVillage already applied above)
+  });
+
+  const container = document.getElementById('villagePills');
+  const allCount  = allMembers.length;
+
+  let html = `<button class="vpill ${activeVillage==='__all__'?'active':''}" data-village="__all__" onclick="setVillage('__all__')">
+    <i class="fa-solid fa-border-all" style="font-size:.72rem"></i> ទាំងអស់ <span class="vpill-count">${allCount}</span>
+  </button>`;
+
+  // Sort villages alphabetically
+  Object.entries(villageMap)
+    .filter(([v]) => v !== '__none__')
+    .sort((a,b) => a[0].localeCompare(b[0], 'km'))
+    .forEach(([village, count]) => {
+      const isActive = activeVillage === village;
+      html += `<button class="vpill ${isActive?'active':''}" data-village="${village}" onclick="setVillage('${village.replace(/'/g,"\'")}')">
+        <i class="fa-solid fa-location-dot" style="font-size:.65rem"></i> ${village} <span class="vpill-count">${count}</span>
+      </button>`;
+    });
+
+  // "ភូមិអត់ដាក់" pill — only if some members have no village
+  if (villageMap['__none__']) {
+    const isActive = activeVillage === '__none__';
+    html += `<button class="vpill ${isActive?'active':''}" data-village="__none__" onclick="setVillage('__none__')">
+      <i class="fa-solid fa-circle-question" style="font-size:.65rem"></i> មិនទាន់ <span class="vpill-count">${villageMap['__none__']}</span>
+    </button>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function setVillage(v) {
+  activeVillage = v;
+  buildVillagePills();
+  applyFilter();
+  // Smooth scroll pills so active pill is visible
+  const active = document.querySelector('.vpill.active');
+  if (active) active.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+}
+
+function renderGrid(data) {
+  const colors = {picked:'#22c55e',partial:'#f59e0b',ready:'#3b82f6',pending:'#94a3b8'};
+  const pillCls= {picked:'pill-picked',partial:'pill-partial',ready:'pill-ready',pending:'pill-pending'};
+  const pillLbl= {picked:'✅ FULL',partial:'⏳ ខ្វះ',ready:'🔵 ត្រៀម',pending:'⬜ រង់ចាំ'};
+  document.getElementById('membersGrid').innerHTML = data.map(m => {
+    const mc = m.monkCount||1, done = m.picksDone||0;
+    const monkBar = (m.status==='partial'||m.status==='picked')
+      ? `<div class="card-monks" style="color:${m.status==='picked'?'#16a34a':'#c2410c'}">
+           🙏 ${'●'.repeat(done)}${'○'.repeat(Math.max(0,mc-done))} ${done}/${mc} អង្គ</div>` : '';
+    return `<div class="member-card ${m.status==='picked'?'is-picked':''} ${m.status==='partial'?'is-partial':''}"
+         onclick="openDetail('${m.id}')">
+      <div class="card-avatar" style="background:${colors[m.status]||'#94a3b8'}">${m.name?m.name.slice(0,1):'?'}</div>
+      <div class="card-body-inner">
+        <div class="card-name">${m.name}</div>
+        <div class="card-village"><i class="fa-solid fa-location-dot me-1"></i>${m.village||'—'}</div>
+        ${m.queueNumber?`<div class="card-queue"><i class="fa-solid fa-hashtag me-1"></i>លេខ ${String(m.queueNumber).padStart(2,'0')}</div>`:''}
+        ${monkBar}
+      </div>
+      <span class="status-pill ${pillCls[m.status]||'pill-pending'}">${pillLbl[m.status]||'⬜ រង់ចាំ'}</span>
+    </div>`;
+  }).join('');
+}
+
+function openDetail(id) {
+  const m = allMembers.find(x=>x.id===id);
+  if (!m) return;
+  const sLbl = {picked:'ចាប់ FULL',partial:'ចាប់មួយចំណែក',ready:'ត្រៀម',pending:'រង់ចាំ'};
+  const sCls = {picked:'sc-picked',partial:'sc-partial',ready:'sc-ready',pending:'sc-pending'};
+  const mc = m.monkCount||1, done = m.picksDone||0;
+
+  document.getElementById('dc-name').textContent        = m.name;
+  document.getElementById('dc-village-sub').textContent  = '📍 ' + (m.village||'—');
+  document.getElementById('dc-village').textContent     = m.village||'—';
+  document.getElementById('dc-monks').textContent       = `${mc} អង្គ (ចាប់ ${done}/${mc})`;
+  document.getElementById('dc-date').textContent        = m.date || new Date().toISOString().slice(0,10);
+  const badge = document.getElementById('dc-status-badge');
+  badge.textContent = sLbl[m.status]||'រង់ចាំ';
+  badge.className   = 'status-capsule ' + (sCls[m.status]||'sc-pending');
+
+  // ── Queue number: show only after admin assigns it ──
+  const queueRow = document.getElementById('dc-queue-row');
+  const queueEl  = document.getElementById('dc-queue');
+  if (m.queueNumber) {
+    queueEl.textContent      = String(m.queueNumber).padStart(3, '0');
+    queueRow.style.display   = 'flex';
+  } else {
+    queueRow.style.display   = 'none';
+    queueEl.textContent      = '—';
+  }
+
+  // ── QR Code: show only after monk has picked (done > 0) ──
+  const qrSec  = document.getElementById('dc-qr-section');
+  const qrNone = document.getElementById('dc-qr-none');
+  const qrEl   = document.getElementById('dc-qr');
+  qrEl.innerHTML = '';
+  if (done > 0) {
+    qrSec.style.display  = 'flex';
+    qrNone.style.display = 'none';
+    new QRCode(qrEl, {
+      text: `${BASE_URL}/verify.html?id=${id}`,
+      width: 78, height: 78,
+      colorDark: '#0D1B2A', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } else {
+    qrSec.style.display  = 'none';
+    qrNone.style.display = 'block';
+  }
+  detailModal.show();
+}
+
+async function saveCard() {
+  const card = document.getElementById('digitalCard');
+  const name = (document.getElementById('dc-name').textContent || 'card').trim();
+  const btn = document.querySelector('.btn-gold-save');
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> កំពុង...';
+  btn.disabled = true;
+  await new Promise(r => setTimeout(r, 400));
+  try {
+    if (!window.html2canvas) await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload = res; s.onerror = rej; document.head.appendChild(s);
+    });
+    const canvas = await html2canvas(card, {
+      scale: 2.5, useCORS: true, allowTaint: true,
+      backgroundColor: '#0a1628', logging: false
+    });
+    const dataUrl = canvas.toDataURL('image/png');
+    if (navigator.share && navigator.canShare) {
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], `${name}.png`, { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          try { await navigator.share({ files: [file], title: name }); }
+          catch(e) { triggerDownload(dataUrl, name); }
+        } else { triggerDownload(dataUrl, name); }
+      }, 'image/png');
+    } else {
+      triggerDownload(dataUrl, name);
+    }
+  } catch(e) {
+    alert('📸 សូម Screenshot ដោយខ្លួនឯង');
+  } finally {
+    btn.innerHTML = origText;
+    btn.disabled = false;
+  }
+}
+
+function triggerDownload(dataUrl, name) {
+  const a = document.createElement('a');
+  a.href = dataUrl; a.download = name + '.png';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+}
+</script>
+</body>
+</html>

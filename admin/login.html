@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Admin វត្តទេពបុរី</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #111827; height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
+        .login-card { background: #1f2937; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 400px; }
+    </style>
+</head>
+<body>
+    <div class="login-card text-center">
+        <h3 class="mb-4">Admin Login</h3>
+        <input type="password" id="adminPin" class="form-control mb-3 text-center" placeholder="វាយលេខកូដសម្ងាត់ (PIN)">
+        <button class="btn btn-warning w-100 fw-bold" onclick="checkLogin()">ចូលប្រព័ន្ធ</button>
+    </div>
+
+    <script>
+        function checkLogin() {
+            const pin = document.getElementById('adminPin').value;
+            // កំណត់ PIN របស់ប្អូននៅទីនេះ (ឧទាហរណ៍៖ ៨៨៩៩)
+            if (pin === '8899') {
+                sessionStorage.setItem('isAdmin', 'true'); // កត់ចំណាំក្នុង Browser ថាបាន Login រួច
+                window.location.href = 'index.html'; // នាំទៅផ្ទាំង Admin
+            } else {
+                alert('លេខកូដមិនត្រឹមត្រូវទេ!');
+            }
+        }
+    </script>
+</body>
+</html>

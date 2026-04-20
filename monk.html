@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>វត្តទេពបុរី — ចាប់ស្លាក</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&family=Moul&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
+
+    <style>
+        :root { --gold: #D4AF37; --blue: #0047AB; --bg: #f8fafc; }
+        body { font-family: 'Kantumruy Pro', sans-serif; background: var(--bg); min-height: 100vh; }
+        .font-moul { font-family: 'Moul', cursive; }
+        .hidden { display: none !important; }
+
+        .page-header { background: white; padding: 20px; text-align: center; border-bottom: 1px solid #e5e7eb; }
+        .temple-logo { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--gold); }
+        
+        .main-card { background: white; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,.05); padding: 30px 20px; margin: 20px auto; max-width: 400px; text-align: center; position: relative; }
+        
+        /* Card លទ្ធផលសម្រាប់ Screenshot */
+        .result-card { border-top: 8px solid var(--gold); background: #ffffff; position: relative; overflow: hidden; }
+        .queue-num { font-size: 5.5rem; color: var(--gold); font-family: 'Moul', cursive; line-height: 1; margin: 10px 0; }
+        
+        .qr-verify-box { background: #f8fafc; padding: 15px; border-radius: 20px; border: 1px dashed #cbd5e1; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        #verifyQR img { width: 80px; height: 80px; border: 3px solid white; border-radius: 10px; }
+
+        .btn-draw { width: 160px; height: 160px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #f59e0b); border: 8px solid white; color: #78350f; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 10px 25px rgba(212,175,55,0.4); }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <img src="assets/images/Gemini_Generated_Image_.png" class="temple-logo" alt="logo" onerror="this.src='https://placehold.co/70x70?text=Logo'">
+    <h1 class="font-moul mt-2" style="font-size: 1.2rem; color: var(--blue);">វត្តទេពបុរី</h1>
+</div>
+
+<div class="container px-3">
+
+    <div id="sec-loading" class="main-card mt-5">
+        <div class="spinner-border text-warning mb-3"></div>
+        <p class="text-muted">កំពុងឆែកឧបករណ៍...</p>
+    </div>
+
+    <div id="sec-phone" class="main-card hidden">
+        <h5 class="fw-bold mb-3">សូមបញ្ចូលលេខទូរស័ព្ទលោក</h5>
+        <input type="tel" id="monkPhone" class="form-control form-control-lg text-center rounded-pill mb-3" placeholder="012 345 678" maxlength="10">
+        <button onclick="confirmPhone()" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow">បន្តទៅមុខ</button>
+    </div>
+
+    <div id="sec-draw" class="main-card hidden">
+        <p class="text-muted small mb-4">ភិក្ខុ/សាមណេរ៖ <span id="txtMonkPhone" class="fw-bold"></span></p>
+        <button id="drawBtn" class="btn-draw" onclick="processDraw()">
+            <i class="fa-solid fa-dharmachakra fa-3x mb-2" id="spinIcon"></i>
+            <span>ចាប់ស្លាក</span>
+        </button>
+        <p class="mt-4 text-muted small italic">ចុចលើរង្វង់ដើម្បីចាប់យកម្ចាស់សទ្ធា</p>
+    </div>
+
+    <div id="sec-result" class="main-card result-card hidden">
+        <div class="badge bg-success mb-3">លទ្ធផលផ្លូវការ</div>
+        <div class="text-muted small uppercase fw-bold">លេខរៀងដែលចាប់បាន</div>
+        <div class="queue-num" id="resQueue">00</div>
+
+        <div class="p-3 bg-light rounded-4 text-start mb-3">
+            <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">ម្ចាស់សទ្ធា</div>
+            <div id="resName" class="fw-bold text-primary fs-5">—</div>
+            <hr class="my-2 opacity-10">
+            <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">អាសយដ្ឋាន</div>
+            <div id="resVillage" class="fw-bold text-dark">—</div>
+        </div>
+
+        <div class="qr-verify-box">
+            <div id="verifyQR"></div>
+            <div class="text-start">
+                <div class="fw-bold text-primary" style="font-size: 0.8rem;">បញ្ជាក់ស្លាកពិត</div>
+                <div class="text-muted" style="font-size: 0.65rem;">ស្កែន QR នេះដើម្បីផ្ទៀងផ្ទាត់<br>ក្នុងប្រព័ន្ធវត្តទេពបុរី</div>
+            </div>
+        </div>
+
+        <button onclick="window.print()" class="btn btn-outline-secondary w-100 rounded-pill py-2 mt-4 btn-sm no-print">
+            <i class="fa-solid fa-camera me-2"></i> រក្សាទុក (Screenshot)
+        </button>
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+
+<script>
+    let deviceId = "";
+    let monkPhone = "";
+
+window.onload = async () => {
+    try {
+        // ១. បង្កើត ID ឧបករណ៍
+        const fp = await FingerprintJS.load();
+        const result = await fp.get();
+        deviceId = result.visitorId;
+
+        // ២. ឆែកមើល Session ក្នុង Database ជាមុនសិន
+        const doc = await db.collection("device_sessions").doc(deviceId).get();
+        
+        if (doc.exists) {
+            // បើគាត់ធ្លាប់ចាប់រួចហើយ គឺអនុញ្ញាតឱ្យគាត់ចូលមើលលទ្ធផលបាន (ទោះគ្មាន QR ក៏ដោយ)
+            displayFinalResult(doc.data());
+            monitorSession(); // តាមដានក្រែងលោ Admin លុបឈ្មោះគាត់
+        } else {
+            // ៣. បើគាត់ជាអ្នកថ្មី ត្រូវតែឆែករក QR Token ជាដាច់ខាត
+            const params = new URLSearchParams(window.location.search);
+            const urlToken = params.get("t"); // យក Token ពី ?t=xxxx
+
+            if (!urlToken) {
+                // បើគ្មាន Token ទេ (មានន័យថាគាត់លួចចូលតាមលីងផ្ទាល់)
+                showError("សូមស្កែន QR Code!", "លោកម្ចាស់មិនអាចចូលតាមរយៈលីងផ្ទាល់បានទេ។ សូមស្កែន QR ពីលើអេក្រង់ TV។");
+                return;
+            }
+
+            // ៤. បើមាន Token ត្រូវផ្ទៀងផ្ទាត់ជាមួយ Firestore ទៀតថា Token ហ្នឹងត្រឹមត្រូវអត់?
+            const isValid = await DB.validateQRToken(urlToken); 
+            if (isValid) {
+                showSection("sec-phone"); // បើត្រឹមត្រូវ ទើបឱ្យគាត់បញ្ចូលលេខទូរស័ព្ទ
+            } else {
+                showError("QR ផុតកំណត់!", "QR Code នេះបានដូរថ្មីបាត់ទៅហើយ។ សូមស្កែន QR ដែលកំពុងបង្ហាញលើ TV ម្ដងទៀត។");
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+};
+
+function showError(title, msg) {
+    document.getElementById("sec-loading").innerHTML = `
+        <div class="main-card border-top border-5 border-danger">
+            <i class="fa-solid fa-qrcode fa-4x text-danger mb-3"></i>
+            <h4 class="font-moul text-danger">${title}</h4>
+            <p class="text-muted small">${msg}</p>
+            <button onclick="location.reload()" class="btn btn-outline-secondary rounded-pill btn-sm">ព្យាយាមម្ដងទៀត</button>
+        </div>
+    `;
+}
+    function confirmPhone() {
+        monkPhone = document.getElementById("monkPhone").value.trim();
+        if (monkPhone.length < 9) return alert("សូមបញ្ចូលលេខទូរស័ព្ទឱ្យត្រឹមត្រូវ!");
+        document.getElementById("txtMonkPhone").innerText = monkPhone;
+        showSection("sec-draw");
+    }
+
+    function checkDeviceSession() {
+    // ប្រើ onSnapshot ដើម្បីតាមដានរហូត (Real-time)
+    db.collection("device_sessions").doc(deviceId).onSnapshot(doc => {
+        if (doc.exists) {
+            // បើមានទិន្នន័យ បង្ហាញលទ្ធផល
+            displayFinalResult(doc.data());
+        } else {
+            // បើអត់មានទិន្នន័យ (ឬត្រូវបាន Admin លុប) ឱ្យមកផ្ទាំងបញ្ចូលលេខទូរស័ព្ទវិញ
+            if (!document.getElementById("sec-result").classList.contains("hidden")) {
+                alert("ទិន្នន័យត្រូវបាន Reset ឬលុបចេញដោយ Admin! លោកម្ចាស់អាចស្កែនចាប់ថ្មីបាន។");
+                location.reload(); // Refresh ដើម្បីលាងទិន្នន័យចាស់
+            } else {
+                showSection("sec-phone");
+            }
+        }
+    }, error => {
+        showSection("sec-phone");
+    });
+}
+
+// ក្នុង monk.html ត្រង់ Function processDraw()
+async function processDraw() {
+    // ... (កូដបិទ Button វិល Icon)
+    try {
+        // ពិនិត្យមើលបន្ទាត់ខាងក្រោម៖ តើមាន (monkPhone) ក្នុងវង់ក្រចកឬនៅ?
+        const result = await DB.monkPick(monkPhone); 
+        
+        if (!result) {
+            alert("អស់ឈ្មោះហើយ!");
+            return;
+        }
+
+        // រក្សាទុកក្នុង Session ឧបករណ៍
+        const sessionData = {
+            deviceId: deviceId,
+            monkPhone: monkPhone,
+            luckyNumber: result.queueNumber,
+            memberName: result.name,
+            memberId: result.id, 
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection("device_sessions").doc(deviceId).set(sessionData);
+        displayFinalResult(sessionData);
+
+    } catch (e) {
+        alert("Error: " + e.message);
+    }
+}
+
+// ក្នុង monk.html
+function displayFinalResult(data) {
+    document.getElementById("resQueue").innerText = String(data.luckyNumber).padStart(2, '0');
+    document.getElementById("resName").innerText = data.memberName;
+    document.getElementById("resVillage").innerText = data.memberVillage || "—";
+    
+    // បង្កើត QR Code ផ្ទៀងផ្ទាត់
+    const qrContainer = document.getElementById("verifyQR");
+    qrContainer.innerHTML = "";
+
+    // ត្រង់នេះសំខាន់បំផុត៖ ត្រូវប្រាកដថា data.memberId មិនមែនទទេ
+    const memberId = data.memberId || data.id; 
+    
+    if (memberId) {
+        const verifyUrl = `${window.location.origin}/verify.html?id=${memberId}`;
+        new QRCode(qrContainer, { text: verifyUrl, width: 85, height: 85 });
+    } else {
+        qrContainer.innerHTML = "<small style='color:red'>Error: No ID</small>";
+    }
+
+    showSection("sec-result");
+}
+
+    function showSection(id) {
+        document.getElementById("sec-loading").classList.add("hidden");
+        document.getElementById("sec-phone").classList.add("hidden");
+        document.getElementById("sec-draw").classList.add("hidden");
+        document.getElementById("sec-result").classList.add("hidden");
+        document.getElementById(id).classList.remove("hidden");
+    }
+</script>
+</body>
+</html>

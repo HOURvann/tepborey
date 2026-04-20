@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>វត្តទេពបុរី — ចុះឈ្មោះ</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&family=Moul&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#D4AF37">
+  <style>
+    :root { --blue:#0047AB; --gold:#D4AF37; --dark:#002366; --bg:#f0f4f8; }
+    *,*::before,*::after{box-sizing:border-box}
+    body { font-family:'Kantumruy Pro',sans-serif; background:var(--bg); color:var(--dark); min-height:100vh; }
+    .font-moul { font-family:'Moul',cursive; }
+    .hidden { display:none !important; }
+
+    /* Top bar */
+    .top-bar {
+      background:white; padding:14px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid #e5e7eb; position:sticky; top:0; z-index:100;
+    }
+    .back-btn {
+      color:#6b7280; text-decoration:none; font-size:.875rem; font-weight:600;
+      display:flex; align-items:center; gap:6px;
+    }
+    .back-btn:hover { color:var(--blue); }
+
+    /* Logo */
+    .temple-logo {
+      width:100px; height:100px; border-radius:50%;
+      border:4px solid var(--gold); object-fit:cover; background:white;
+      box-shadow:0 6px 20px rgba(0,71,171,.15);
+    }
+
+    /* Card */
+    .form-card {
+      background:white; border-radius:28px;
+      box-shadow:0 12px 40px rgba(0,71,171,.08);
+      padding:32px 28px;
+    }
+
+    /* Form controls */
+    .form-control {
+      border-radius:14px; padding:13px 16px;
+      border:1.5px solid #e2e8f0; font-size:.95rem;
+    }
+    .form-control:focus {
+      border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(212,175,55,.15);
+    }
+    .form-label { font-size:.82rem; font-weight:700; color:#374151; margin-bottom:6px; }
+    .err-txt { font-size:.75rem; color:#dc2626; margin-top:4px; display:none; }
+
+    /* Submit button */
+    .btn-submit {
+      background:linear-gradient(135deg,var(--blue),var(--dark));
+      color:white; border:none; border-radius:50px;
+      padding:14px 28px; font-size:1rem; font-weight:700;
+      width:100%; cursor:pointer; transition:.2s;
+    }
+    .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,71,171,.35); }
+    .btn-submit:disabled { opacity:.5; transform:none; cursor:not-allowed; }
+    .monk-count-btn {
+      padding:10px 4px; border-radius:12px; border:2px solid #e2e8f0;
+      background:white; font-size:.85rem; font-weight:700; color:#374151;
+      cursor:pointer; transition:.15s; font-family:'Kantumruy Pro',sans-serif;
+    }
+    .monk-count-btn:hover { border-color:var(--gold); background:#fffbeb; }
+    .monk-count-btn.selected { border-color:var(--blue); background:#eff6ff; color:var(--blue); }
+
+    /* Lock screen */
+    .lock-card {
+      background:white; border-radius:28px;
+      box-shadow:0 12px 40px rgba(0,71,171,.08);
+      padding:40px 28px; text-align:center;
+    }
+    .lock-icon { font-size:4rem; color:#f59e0b; margin-bottom:16px; }
+
+    /* Success screen */
+    .success-card {
+      background:white; border-radius:28px;
+      box-shadow:0 12px 40px rgba(0,71,171,.08);
+      padding:40px 28px; text-align:center;
+    }
+    .success-check { font-size:5rem; color:#22c55e; margin-bottom:16px; }
+    .success-name { font-size:1.4rem; font-weight:800; color:var(--blue); }
+    .btn-back-home {
+      background:var(--gold); color:white; border:none;
+      border-radius:50px; padding:14px 32px;
+      font-size:1rem; font-weight:700; cursor:pointer;
+      text-decoration:none; display:inline-block; transition:.2s;
+      box-shadow:0 6px 16px rgba(212,175,55,.4);
+    }
+    .btn-back-home:hover { background:#b8962d; color:white; transform:translateY(-2px); }
+
+    /* Spinner */
+    .spin { animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <a href="index.html" class="back-btn">
+    <i class="fa-solid fa-chevron-left"></i> ត្រឡប់ទៅបញ្ជី
+  </a>
+  <span style="font-size:.75rem;color:#94a3b8" id="top-status"></span>
+</div>
+
+<div class="container py-4 pb-5" style="max-width:480px">
+
+  <!-- Logo -->
+  <div class="text-center mb-4">
+    <img src="assets/images/Gemini_Generated_Image_.png" alt="logo" class="temple-logo mb-3" onerror="this.style.display='none'">
+    <h1 class="font-moul h4 mb-1" style="color:var(--blue)">វត្តទេពបុរី</h1>
+    <p class="small text-secondary fw-bold mb-0">TEPBOREY PAGODA</p>
+  </div>
+
+  <!-- LOADING -->
+  <div id="sec-loading" class="text-center py-5">
+    <i class="fa-solid fa-circle-notch fa-2x spin" style="color:var(--gold)"></i>
+    <div class="small text-muted mt-2">កំពុងផ្ទៀងផ្ទាត់...</div>
+  </div>
+
+  <!-- LOCKED -->
+  <div id="sec-locked" class="lock-card hidden">
+    <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+    <h4 class="font-moul mb-2" style="color:var(--blue)">ការចុះឈ្មោះបានបិទ</h4>
+    <p class="text-muted small mb-4">
+      Admin បានបិទការចុះឈ្មោះរួចហើយ<br>
+      សូមមើលស្ថានភាពក្នុងបញ្ជីឈ្មោះ
+    </p>
+    <a href="index.html" class="btn-back-home">
+      <i class="fa-solid fa-list me-2"></i> ទៅមើលបញ្ជីឈ្មោះ
+    </a>
+  </div>
+
+  <!-- REGISTER FORM -->
+  <div id="sec-form" class="hidden">
+    <div class="form-card">
+      <h4 class="font-moul text-center mb-4" style="color:var(--blue)">ពិធីបុណ្យសាលាកភត្ត</h4>
+
+      <div class="mb-3">
+        <label class="form-label">ឈ្មោះពេញ <span class="text-danger">*</span></label>
+        <input type="text" id="f-name" class="form-control" placeholder="ឧ. ហែម ម៉ារី">
+        <div class="err-txt" id="err-name">សូមបញ្ចូលឈ្មោះ</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">ឈ្មោះភូមិ <span class="text-danger">*</span></label>
+        <input type="text" id="f-village" class="form-control" placeholder="ឧ. ភូមិត្រពាំងវែង">
+        <div class="err-txt" id="err-village">សូមបញ្ចូលឈ្មោះភូមិ</div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label">ចំនួនព្រះសង្ឃ <span class="text-danger">*</span>
+          <!-- <span style="font-size:.72rem;font-weight:400;color:#6b7280"> — ថ្វាយភោជនក្នុង​មួយ​ឈ្មោះ</span> -->
+        </label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px" id="monk-count-grid">
+          <button type="button" class="monk-count-btn" data-val="1" onclick="selectMonkCount(1)">1 អង្គ</button>
+          <button type="button" class="monk-count-btn" data-val="2" onclick="selectMonkCount(2)">2 អង្គ</button>
+          <button type="button" class="monk-count-btn" data-val="3" onclick="selectMonkCount(3)">3 អង្គ</button>
+          <button type="button" class="monk-count-btn" data-val="4" onclick="selectMonkCount(4)">4 អង្គ</button>
+          <button type="button" class="monk-count-btn" data-val="5" onclick="selectMonkCount(5)">5 អង្គ</button>
+          <button type="button" class="monk-count-btn" data-val="6" onclick="selectMonkCount(6)">6 អង្គ</button>
+          <button type="button" class="monk-count-btn" data-val="10" onclick="selectMonkCount(10)">10 អង្គ</button>
+          <button type="button" class="monk-count-btn" data-val="20" onclick="selectMonkCount(20)">20 អង្គ</button>
+        </div>
+        <input type="hidden" id="f-monkcount" value="">
+        <div class="err-txt" id="err-monkcount">សូមជ្រើសរើសចំនួនព្រះសង្ឃ</div>
+      </div>
+
+      <button id="submitBtn" class="btn-submit" onclick="doRegister()">
+        <span id="btn-txt"><i class="fa-solid fa-user-plus me-2"></i>ចុះឈ្មោះឥឡូវនេះ</span>
+        <span id="btn-spin" class="hidden"><i class="fa-solid fa-circle-notch spin me-2"></i>កំពុងរក្សាទុក...</span>
+      </button>
+    </div>
+
+    <!-- Staff register link -->
+    <div class="text-center mt-4">
+      <button class="btn btn-outline-secondary btn-sm rounded-pill px-4"
+              data-bs-toggle="modal" data-bs-target="#staffModal">
+        <i class="fa-solid fa-user-shield me-1"></i> ចុះឈ្មោះជំនួស (Staff)
+      </button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="sec-success" class="success-card hidden">
+    <div class="success-check"><i class="fa-solid fa-circle-check"></i></div>
+    <h4 class="font-moul mb-2" style="color:var(--blue)">ចុះឈ្មោះជោគជ័យ!</h4>
+    <div class="success-name mb-1" id="suc-name"></div>
+    <div class="text-muted small mb-1" id="suc-village"></div>
+    <div class="text-muted small mb-4" id="suc-phone"></div>
+    <p class="small text-muted mb-4">
+      អ្នកអាចមើលឈ្មោះ និងស្ថានភាពបាន<br>ក្នុងបញ្ជីឈ្មោះម្ចាស់សទ្ធា
+    </p>
+    <a href="index.html" class="btn-back-home">
+      <i class="fa-solid fa-list me-2"></i> ទៅមើលបញ្ជីឈ្មោះ
+    </a>
+    <div class="mt-3">
+      <button class="btn btn-link text-muted small" onclick="registerAnother()">
+        ចុះឈ្មោះម្នាក់ទៀត
+      </button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Staff PIN Modal -->
+<div class="modal fade" id="staffModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content" style="border-radius:22px;border:none">
+      <div class="modal-body p-4 text-center">
+        <h6 class="fw-bold mb-1">ចុះឈ្មោះជំនួស</h6>
+        <p class="small text-muted mb-3">វាយ Master PIN ដើម្បីចុះឈ្មោះជំនួស</p>
+        <input type="password" id="staff-pin" class="form-control text-center fs-4 mb-3" placeholder="••••" maxlength="8">
+        <div id="pin-err" class="small text-danger mb-2 hidden">PIN មិនត្រឹមត្រូវ!</div>
+        <button onclick="checkStaffPin()" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">បញ្ជាក់</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+<script>
+/* ════════════════════════════════════════
+   REGISTER — Free, Lock Check, Back Home
+════════════════════════════════════════ */
+
+const staffModal = new bootstrap.Modal(document.getElementById('staffModal'));
+let isStaffMode  = false;   // Staff bypasses lock
+
+/* ── Sections ── */
+const S = {
+  loading : document.getElementById('sec-loading'),
+  locked  : document.getElementById('sec-locked'),
+  form    : document.getElementById('sec-form'),
+  success : document.getElementById('sec-success'),
+};
+function show(sec){ Object.values(S).forEach(el=>el.classList.add('hidden')); sec.classList.remove('hidden'); }
+
+/* ── Init: check lock status ── */
+window.addEventListener('DOMContentLoaded', () => {
+  DB.listenToLock(locked => {
+    if (isStaffMode) {
+      // Staff can always see form
+      show(S.form);
+    } else if (locked) {
+      show(S.locked);
+      document.getElementById('top-status').textContent = '🔒 ការចុះឈ្មោះបានបិទ';
+    } else {
+      // Only show form if not in success screen
+      if (!S.success.classList.contains('hidden')) return;
+      show(S.form);
+      document.getElementById('top-status').textContent = '🟢 ចុះឈ្មោះបានដោយសេរី';
+    }
+  });
+});
+
+/* ── Validate ── */
+let selectedMonkCount = 0;
+
+function selectMonkCount(val) {
+  selectedMonkCount = val;
+  document.getElementById('f-monkcount').value = val;
+  document.querySelectorAll('.monk-count-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.val) === val);
+  });
+  document.getElementById('err-monkcount').style.display = 'none';
+}
+
+function validate() {
+  const name       = document.getElementById('f-name').value.trim();
+  const village    = document.getElementById('f-village').value.trim();
+  const monkCount  = selectedMonkCount;
+  let ok = true;
+
+  const showErr = (id, vis) => document.getElementById(id).style.display = vis ? 'block' : 'none';
+
+  if(name.length < 2)   { showErr('err-name',true);       ok=false; } else showErr('err-name',false);
+  if(village.length < 2){ showErr('err-village',true);    ok=false; } else showErr('err-village',false);
+  if(!monkCount)        { showErr('err-monkcount',true);  ok=false; } else showErr('err-monkcount',false);
+
+  return ok ? { name, village, monkCount } : null;
+}
+
+/* ── Submit ── */
+async function doRegister() {
+  const data = validate();
+  if (!data) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('btn-txt').classList.add('hidden');
+  document.getElementById('btn-spin').classList.remove('hidden');
+
+  try {
+    await DB.addMember(data.name, data.village, data.monkCount);
+
+    // Show success
+    document.getElementById('suc-name').textContent    = data.name;
+    document.getElementById('suc-village').textContent = '📍 ' + data.village;
+    document.getElementById('suc-phone').textContent   = '🙏 ថ្វាយ ' + data.monkCount + ' អង្គ';
+    show(S.success);
+
+    // Clear form
+    ['f-name','f-village'].forEach(id => document.getElementById(id).value='');
+    selectedMonkCount = 0;
+    document.querySelectorAll('.monk-count-btn').forEach(b => b.classList.remove('selected'));
+
+  } catch(e) {
+    alert('កំហុស: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    document.getElementById('btn-txt').classList.remove('hidden');
+    document.getElementById('btn-spin').classList.add('hidden');
+  }
+}
+
+/* Allow Enter on last field */
+document.getElementById('f-phone').addEventListener('keydown', e => {
+  if(e.key==='Enter') doRegister();
+});
+
+/* Register another person */
+function registerAnother() {
+  isStaffMode = false;
+  show(S.form);
+}
+
+/* ── Staff PIN ── */
+async function checkStaffPin() {
+  const pin = document.getElementById('staff-pin').value.trim();
+  const errEl = document.getElementById('pin-err');
+  const s = await DB.getSettings();
+  if(pin === s.masterPin) {
+    isStaffMode = true;
+    staffModal.hide();
+    document.getElementById('staff-pin').value = '';
+    errEl.classList.add('hidden');
+    show(S.form);
+    document.getElementById('top-status').textContent = '🟡 Staff Mode';
+  } else {
+    errEl.classList.remove('hidden');
+  }
+}
+document.getElementById('staff-pin').addEventListener('keydown', e => {
+  if(e.key==='Enter') checkStaffPin();
+});
+</script>
+</body>
+</html>

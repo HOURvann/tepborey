@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tepborey Admin — Dashboard</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Moul&display=swap" rel="stylesheet">
+
+  <style>
+    /* ══════════════════════════════════════════
+        GLOBAL SHARED STYLES  (copy to all pages)
+    ══════════════════════════════════════════ */
+    :root {
+      --sb-width   : 260px;
+      --sb-bg      : #111827;
+      --sb-hover   : #1f2937;
+      --gold       : #D4AF37;
+      --body-bg    : #f1f5f9;
+      --card-radius: 18px;
+      --card-shadow: 0 2px 12px rgba(0,0,0,.05);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'Kantumruy Pro', sans-serif;
+      background: var(--body-bg);
+      overflow-x: hidden;
+    }
+    .font-moul { font-family: 'Moul', cursive; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sb-width); height: 100vh;
+      background: var(--sb-bg); color: #9ca3af;
+      display: flex; flex-direction: column;
+      z-index: 1100; transition: left .3s;
+    }
+    .sidebar-brand {
+      padding: 28px 24px 22px;
+      border-bottom: 1px solid var(--sb-hover);
+    }
+    .sidebar nav .nav-link {
+      display: flex; align-items: center; gap: 13px;
+      padding: 13px 24px; color: #9ca3af;
+      border-left: 3px solid transparent;
+      border-radius: 0; font-size: .875rem;
+      transition: all .18s; text-decoration: none;
+    }
+    .sidebar nav .nav-link i { width: 20px; font-size: 16px; flex-shrink: 0; }
+    .sidebar nav .nav-link:hover,
+    .sidebar nav .nav-link.active {
+      background: var(--sb-hover); color: #fff;
+      border-left-color: var(--gold);
+    }
+    .sidebar-footer {
+      padding: 18px 24px;
+      border-top: 1px solid var(--sb-hover);
+    }
+    .sidebar-footer .nav-link { padding: 0; border: none !important; }
+
+    /* ── Main wrapper ── */
+    .main-wrapper {
+      margin-left: var(--sb-width);
+      min-height: 100vh;
+      padding: 36px 36px 60px;
+    }
+
+    /* ── Page header ── */
+    .page-title   { font-size: 1.5rem; font-weight: 700; }
+    .page-subtitle{ font-size: .8rem; color: #6b7280; margin-top: 2px; }
+
+    /* ── Stat cards ── */
+    .stat-card {
+      background: #fff;
+      border-radius: var(--card-radius);
+      padding: 22px 24px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(0,0,0,.04);
+      display: flex; align-items: center; gap: 18px;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.09); }
+    .stat-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .stat-num   { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+    .stat-label { font-size: .75rem; color: #6b7280; margin-bottom: 4px; }
+
+    /* ── Content card ── */
+    .content-card {
+      background: #fff;
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(0,0,0,.04);
+      overflow: hidden;
+    }
+    .content-card-header {
+      padding: 20px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* ── Table ── */
+    .table-custom thead th {
+      background: #f8fafc;
+      color: #6b7280;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 12px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      font-weight: 600;
+    }
+    .table-custom tbody td {
+      padding: 14px 20px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f8fafc;
+      font-size: .875rem;
+    }
+    .table-custom tbody tr:last-child td { border-bottom: none; }
+    .table-custom tbody tr:hover { background: #fafbfc; }
+
+    /* ── Lock warning bar ── */
+    #lockBar {
+      display: none;
+      align-items: center; gap: 10px;
+      background: #fef2f2; border: 1px solid #fca5a5;
+      border-radius: 12px; padding: 12px 20px;
+      color: #dc2626; font-size: .82rem; font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 991px) {
+      .sidebar     { left: -var(--sb-width); }
+      .main-wrapper{ margin-left: 0; padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="font-moul text-white fs-5" id="brand-name">វត្តទេពបុរី</span>
+    <span class="d-block small opacity-50 mt-1">Admin Panel</span>
+  </div>
+  <nav class="flex-grow-1 mt-3">
+    <a href="index.html"      class="nav-link active"><i class="fa-solid fa-chart-line"></i>   Dashboard</a>
+    <a href="members.html"    class="nav-link"><i class="fa-solid fa-users"></i>               អ្នកចុះឈ្មោះ (Donors)</a>
+    <a href="activities.html" class="nav-link"><i class="fa-solid fa-dharmachakra"></i>        សកម្មភាពសង្ឃ</a>
+    <a href="settings.html"   class="nav-link"><i class="fa-solid fa-gear"></i>                ការកំណត់</a>
+    <a href="lucky-draw.html"  class="nav-link"><i class="fa-solid fa-dharmachakra" style="color:var(--gold)"></i> <span style="color:var(--gold);font-weight:700">ចាប់ស្លាកបំងិល</span></a>
+    <a href="qr-generator.html" class="nav-link"><i class="fa-solid fa-qrcode" style="color:#f97316"></i> បង្ហាញ QR ចាប់ស្លាក</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="#" class="nav-link text-danger" onclick="handleLogout(event)">
+      <i class="fa-solid fa-right-from-bracket"></i> ចាកចេញ
+    </a>
+  </div>
+</aside>
+
+<div class="main-wrapper">
+
+  <div class="d-flex justify-content-between align-items-start mb-5 flex-wrap gap-3">
+    <div>
+      <h4 class="page-title mb-0">ទិដ្ឋភាពទូទៅ (Dashboard)</h4>
+      <p class="page-subtitle mb-0" id="welcome-msg">ស្វាគមន៍ការត្រឡប់មកវិញ, Admin</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-warning rounded-pill px-4 fw-bold" onclick="resetAllQueueNumbers(this)"
+        style="color:#7c2d12;border:none">
+        <i class="fa-solid fa-rotate-left me-2"></i> Reset លេខស្លាកទាំងអស់
+      </button>
+      <button class="btn btn-danger rounded-pill px-4 fw-bold js-lock-btn" onclick="toggleLock()">
+        <i class="fa-solid fa-lock me-2"></i> បិទការចុះឈ្មោះ
+      </button>
+    </div>
+  </div>
+
+  <div id="lockBar">
+    <i class="fa-solid fa-triangle-exclamation fa-lg"></i>
+    ការចុះឈ្មោះត្រូវបានបិទ — ពុទ្ធបរិស័ទមិនអាចចុះឈ្មោះបានទេ
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-lg-4 col-md-6">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#eff6ff">
+          <i class="fa-solid fa-user-plus" style="color:#3b82f6"></i>
+        </div>
+        <div>
+          <div class="stat-label">ចុះឈ្មោះសរុប</div>
+          <div class="stat-num" id="stat-total">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#f0fdf4">
+          <i class="fa-solid fa-circle-check" style="color:#22c55e"></i>
+        </div>
+        <div>
+          <div class="stat-label">ចាប់រួច</div>
+          <div class="stat-num" id="stat-picked">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fff7ed">
+          <i class="fa-solid fa-hourglass-half" style="color:#f59e0b"></i>
+        </div>
+        <div>
+          <div class="stat-label">នៅសល់</div>
+          <div class="stat-num" id="stat-pending">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card">
+    <div class="content-card-header">
+      <h5 class="fw-bold mb-0">បញ្ជីឈ្មោះថ្មីៗ</h5>
+      <a href="members.html" class="btn btn-sm btn-light text-primary fw-semibold">
+        មើលទាំងអស់ <i class="fa-solid fa-chevron-right ms-1"></i>
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover table-custom mb-0">
+        <thead>
+          <tr>
+            <th>ឈ្មោះពុទ្ធបរិស័ទ</th>
+            <th>លេខទូរស័ព្ទ</th>
+            <th>ស្ថានភាព</th>
+            <th>ចាប់ដោយ (លោក)</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="dash-tbody">
+          <tr><td colspan="5" class="text-center text-muted py-4">កំពុងផ្ទុក...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><div class="position-fixed bottom-0 end-0 p-4" style="z-index:9999">
+  <div id="globalToast" class="toast align-items-center text-white border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold">
+        <i id="toastIcon" class="fa-solid fa-circle-check me-2"></i>
+        <span id="toastMsg"></span>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script src="../js/firebase-config.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/data.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
+
+<!-- duplicate block removed -->
+<script>
+/* ── On load ── */
+/* ── ប្រើប្រាស់ Real-time Listener ជំនួសការ Fetch ម្ដងម្នាក់ ── */
+(function() {
+    // ឆែកមើល តើមានសញ្ញាសម្គាល់ថាបាន Login រួចឬនៅ?
+    if (sessionStorage.getItem('isAdmin') !== 'true') {
+        // បើអត់មានទេ ដេញវាទៅផ្ទាំង Login វិញភ្លាម
+        window.location.href = 'login.html';
+    }
+})();
+(function () {
+    // ១. ស្ដាប់ការកំណត់ (Settings)
+    DB.getSettings().then(s => {
+        document.getElementById("brand-name").textContent = s.templeName;
+        // បើប្អូនមាន adminName ក្នុង settings អាចដាក់បាន បើអត់ទេដាក់ថេរ
+        document.getElementById("welcome-msg").textContent = `ស្វាគមន៍ការត្រឡប់មកវិញ, Admin`;
+    });
+
+    // ២. ស្ដាប់ការចាក់សោ (Lock Status)
+    DB.listenToLock(isLocked => {
+        const lockBar = document.getElementById("lockBar");
+        const lockBtn = document.querySelector(".js-lock-btn");
+        if (isLocked) {
+            lockBar.style.display = "flex";
+            lockBtn.innerHTML = '<i class="fa-solid fa-lock-open me-2"></i> បើកការចុះឈ្មោះវិញ';
+            lockBtn.className = "btn btn-success rounded-pill px-4 fw-bold js-lock-btn";
+        } else {
+            lockBar.style.display = "none";
+            lockBtn.innerHTML = '<i class="fa-solid fa-lock me-2"></i> បិទការចុះឈ្មោះ និងផ្ដល់លេខ';
+            lockBtn.className = "btn btn-danger rounded-pill px-4 fw-bold js-lock-btn";
+        }
+    });
+
+    // ៣. ស្ដាប់បញ្ជីឈ្មោះ (Members List) - បង្ហាញ Real-time ភ្លាមៗពេលមានអ្នកចុះឈ្មោះ
+    DB.listenToMembers((members) => {
+        updateStats(members);
+        renderTable(members.slice(0, 6)); // បង្ហាញតែ ៦ នាក់ដំបូងក្នុង Dashboard
+    });
+})();
+
+function updateStats(members) {
+    const picked = members.filter(m => m.status === "picked").length;
+    const pending = members.filter(m => m.status === "pending" || m.status === "ready").length;
+    
+    document.getElementById("stat-total").textContent   = members.length;
+    document.getElementById("stat-picked").textContent  = picked;
+    document.getElementById("stat-pending").textContent = pending;
+}
+
+// updateQueueNumber merged into assignNumber
+function renderTable(members) {
+    const tbody = document.getElementById("dash-tbody");
+    if (!members.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">មិនទាន់មានអ្នកចុះឈ្មោះ</td></tr>`;
+        return;
+    }
+    // Sort newest first
+    const sorted = [...members].sort((a,b) => {
+        const ta = (a.createdAt && a.createdAt.seconds) ? a.createdAt.seconds : 0;
+        const tb = (b.createdAt && b.createdAt.seconds) ? b.createdAt.seconds : 0;
+        return tb - ta;
+    });
+    tbody.innerHTML = sorted.map(m => `
+        <tr>
+            <td>
+                <div class="fw-bold">${m.name}</div>
+                <div class="small text-muted">${m.village}</div>
+
+${m.queueNumber
+    ? `<span class="badge bg-warning text-dark" style="cursor:pointer" onclick="assignNumber('${m.id}',${m.queueNumber})" title="ចុចដើម្បីកែ ឬ លុប">
+         # ${m.queueNumber.toString().padStart(3,'0')} <i class="fa-solid fa-pen-to-square ms-1" style="font-size:.65rem"></i>
+       </span>`
+    : `<button class="btn btn-sm btn-outline-primary" onclick="assignNumber('${m.id}',null)">+ ដាក់លេខ</button>`
+}
+            </td>
+            <td>${m.phone}</td>
+            <td>${statusBadge(m.status)}</td>
+            <td class="fw-semibold">${m.pickedBy || '<span class="text-muted">—</span>'}</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-light text-danger" onclick="deleteMember('${m.id}')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+        </tr>`).join("");
+}
+
+// ── ដាក់ / កែ / លុប លេខស្លាក ──
+async function assignNumber(docId, currentNum) {
+    // Build a small inline modal instead of prompt() so UX is clean
+    const existing = currentNum ? String(currentNum).padStart(3,'0') : null;
+    const title    = existing ? `កែ ឬ លុបលេខ #${existing}` : 'ដាក់លេខស្លាក';
+
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:18px;padding:28px 28px 22px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:'Kantumruy Pro',sans-serif">
+        <h6 style="font-weight:700;margin-bottom:16px;font-size:1rem">${title}</h6>
+        <input id="_qnum" type="number" min="1" max="999" value="${existing||''}"
+          placeholder="បញ្ចូលលេខ (ឧ. 5)"
+          style="width:100%;border:1.5px solid #d1d5db;border-radius:10px;padding:10px 14px;font-size:1rem;margin-bottom:14px;font-family:inherit;outline:none"
+          oninput="this.style.borderColor='#3b82f6'"
+        >
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="_qsave"
+            style="flex:1;background:#1d4ed8;color:#fff;border:none;border-radius:10px;padding:10px;font-weight:700;cursor:pointer;font-family:inherit">
+            💾 រក្សាទុក
+          </button>
+          ${existing ? `<button id="_qdel"
+            style="flex:1;background:#fee2e2;color:#dc2626;border:none;border-radius:10px;padding:10px;font-weight:700;cursor:pointer;font-family:inherit">
+            🗑 លុបលេខ
+          </button>` : ''}
+          <button id="_qcancel"
+            style="width:100%;background:#f1f5f9;color:#374151;border:none;border-radius:10px;padding:9px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px">
+            បោះបង់
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('_qnum').focus();
+
+    await new Promise(resolve => {
+        // Save
+        document.getElementById('_qsave').onclick = async () => {
+            const val = parseInt(document.getElementById('_qnum').value);
+            if (!val || val < 1) {
+                document.getElementById('_qnum').style.borderColor = '#dc2626';
+                document.getElementById('_qnum').focus();
+                return;
+            }
+            try {
+                await db.collection("members").doc(docId).update({
+                    queueNumber: val,
+                    status: "ready"
+                });
+                showToast("✅ បានដាក់លេខ #" + String(val).padStart(3,'0') + " ជោគជ័យ", "success");
+            } catch(e) {
+                showToast("កំហុស: " + e.message, "danger");
+            }
+            resolve();
+        };
+        // Delete queue number
+        if (existing) {
+            document.getElementById('_qdel').onclick = async () => {
+                if (!confirm("លុបលេខ #" + existing + " ចេញពីពុទ្ធបរិស័ទនេះ?")) return;
+                try {
+                    await db.collection("members").doc(docId).update({
+                        queueNumber: firebase.firestore.FieldValue.delete(),
+                        status: "pending"
+                    });
+                    showToast("🗑 លុបលេខស្លាករួចរាល់", "warning");
+                } catch(e) {
+                    showToast("កំហុស: " + e.message, "danger");
+                }
+                resolve();
+            };
+        }
+        // Cancel & backdrop click
+        document.getElementById('_qcancel').onclick = () => resolve();
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) resolve(); });
+    });
+    if (document.body.contains(overlay)) document.body.removeChild(overlay);
+}
+/* ── មុខងារថ្មី៖ បិទ Form និងរៀបលេខរៀងមាស ── */
+async function toggleLock() {
+    const isLocked = document.getElementById("lockBar").style.display === "flex";
+    
+    // បើបច្ចុប្បន្នមិនទាន់បិទ (កំពុងបើក) យើងនឹងធ្វើការបិទ Form តែប៉ុណ្ណោះ
+    if (!isLocked) {
+        if (confirm("តើអ្នកពិតជាចង់បិទការចុះឈ្មោះមែនទេ? (ចំណាំ៖ នឹងមិនមានការផ្ដល់លេខអូតូទេ)")) {
+            try {
+                // ហៅត្រឹមតែមុខងារបិទ Lock នៅក្នុង database
+                await DB.toggleLock(true); 
+                
+                showToast("បានបិទការចុះឈ្មោះរួចរាល់!", "success");
+            } catch (e) {
+                console.error(e);
+                alert("កំហុសបច្ចេកទេស៖ " + e.message);
+            }
+        }
+    } else {
+        // បើចង់បើកការចុះឈ្មោះវិញ (ទុកដូចដើម)
+        if (confirm("តើអ្នកចង់បើកការចុះឈ្មោះឡើងវិញមែនទេ?")) {
+            try {
+                await DB.toggleLock(false);
+                showToast("បើកការចុះឈ្មោះឡើងវិញហើយ", "success");
+            } catch (e) {
+                alert("កំហុសបច្ចេកទេស៖ " + e.message);
+            }
+        }
+    }
+}
+
+async function deleteMember(id) {
+    if (!confirm("តើអ្នកចង់លុបទិន្នន័យនេះមែនទេ? ឧបករណ៍ដែលធ្លាប់ចាប់ឈ្មោះនេះនឹងអាចចាប់បានម្ដងទៀត។")) return;
+    
+    try {
+        // ១. ទាញរក Device ID ពីក្នុង Member មុននឹងលុប
+        const memberDoc = await db.collection("members").doc(id).get();
+        const data = memberDoc.data();
+        
+        // ២. លុប Session ក្នុងឧបករណ៍ (Unlock device)
+        if (data.deviceId) {
+            await db.collection("device_sessions").doc(data.deviceId).delete();
+        }
+
+        // ៣. លុប Member ចេញពីបញ្ជី
+        await db.collection("members").doc(id).delete();
+        
+        alert("លុបជោគជ័យ!");
+    } catch (e) {
+        alert("កំហុស៖ " + e.message);
+    }
+}
+
+async function resetAllQueueNumbers(btn) {
+    // Step 1: confirm with double-check
+    const first = confirm("⚠️ តើអ្នកពិតជាចង់លុបលេខស្លាកទាំងអស់ចេញ?\n\nសកម្មភាពនេះនឹង reset member ទាំងអស់ ទៅ status: pending ។");
+    if (!first) return;
+    const second = confirm("✋ ជំហានទី ២ — ពិនិត្យម្ដងទៀត:\nលេខស្លាកទាំងអស់នឹងត្រូវបានលុប និង status ត្រូវវិល pending ។\n\nបន្ត?");
+    if (!second) return;
+
+    // Show loading state on button
+    // btn passed as parameter
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> កំពុង Reset...';
+
+    try {
+        // Get all members
+        const snap = await db.collection("members").get();
+        if (snap.empty) {
+            showToast("មិនមានសមាជិកក្នុងបញ្ជីទេ", "warning");
+            btn.disabled = false;
+            btn.innerHTML = orig;
+            return;
+        }
+
+        // Batch delete queueNumber + reset status for all
+        const batchSize = 450; // Firestore batch limit is 500
+        let batch = db.batch();
+        let count = 0;
+        let total = 0;
+
+        for (const doc of snap.docs) {
+            const data = doc.data();
+            // Only reset if they have a queueNumber or non-pending status
+            if (data.queueNumber || (data.status && data.status !== 'pending')) {
+                batch.update(doc.ref, {
+                    queueNumber: firebase.firestore.FieldValue.delete(),
+                    status: "pending",
+                    picksDone: 0,
+                    pickedBy: firebase.firestore.FieldValue.delete()
+                });
+                count++;
+                total++;
+                if (count >= batchSize) {
+                    await batch.commit();
+                    batch = db.batch();
+                    count = 0;
+                }
+            }
+        }
+        if (count > 0) await batch.commit();
+
+        showToast(`✅ Reset រួចរាល់! សមាជិក ${total} នាក់ ត្រូវបាន reset`, "success");
+    } catch(e) {
+        console.error(e);
+        showToast("កំហុស: " + e.message, "danger");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+    }
+}
+
+function handleLogout(e) {
+    e.preventDefault();
+    if (confirm("ចាកចេញពីប្រព័ន្ធ?")) {
+        // បន្ថែម Logic លុប Session បើប្អូនមាន
+        window.location.href = "../index.html";
+    }
+}
+</script>
+</body>
+</html>

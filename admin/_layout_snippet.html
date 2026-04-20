@@ -1,0 +1,39 @@
+<!--
+  _layout_snippet.html
+  Copy-paste the <aside> and <div id="globalToast"> into every page.
+  This file is for reference only — not served directly.
+-->
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar d-flex flex-column">
+  <div class="sidebar-brand">
+    <span class="font-moul text-white fs-5" id="brand-name">វត្តទេពបុរី</span>
+    <span class="d-block small opacity-50 mt-1">Admin Panel</span>
+  </div>
+
+  <nav class="flex-grow-1 mt-3">
+    <a href="index.html"      class="nav-link" data-page="dashboard"> <i class="fa-solid fa-chart-line"></i>     Dashboard                </a>
+    <a href="members.html"    class="nav-link" data-page="members">   <i class="fa-solid fa-users"></i>          អ្នកចុះឈ្មោះ (Donors)    </a>
+    <a href="activities.html" class="nav-link" data-page="activities"><i class="fa-solid fa-dharmachakra"></i>   សកម្មភាពសង្ឃ             </a>
+    <a href="settings.html"   class="nav-link" data-page="settings">  <i class="fa-solid fa-gear"></i>           ការកំណត់                  </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="#" class="nav-link text-danger border-0 p-0" onclick="handleLogout()">
+      <i class="fa-solid fa-right-from-bracket"></i> ចាកចេញ
+    </a>
+  </div>
+</aside>
+
+<!-- ═══════════ TOAST ═══════════ -->
+<div class="position-fixed bottom-0 end-0 p-4" style="z-index:9999">
+  <div id="globalToast" class="toast align-items-center text-white border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold">
+        <i id="toastIcon" class="fa-solid fa-circle-check me-2"></i>
+        <span id="toastMsg"></span>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>

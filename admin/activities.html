@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tepborey Admin — សកម្មភាពសង្ឃ</title>
+  <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#D4AF37">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Moul&display=swap" rel="stylesheet">
+
+  <style>
+    /* រក្សានូវ Style ដើមរបស់អ្នកទាំងអស់ដើម្បីឱ្យ UI ស៊ីគ្នា */
+    :root {
+      --sb-width: 260px; --sb-bg: #111827; --sb-hover: #1f2937;
+      --gold: #D4AF37; --body-bg: #f1f5f9; --card-radius: 18px;
+      --card-shadow: 0 2px 12px rgba(0,0,0,.05);
+    }
+    body { font-family: 'Kantumruy Pro', sans-serif; background: var(--body-bg); overflow-x: hidden; }
+    .font-moul { font-family: 'Moul', cursive; }
+
+    /* Sidebar Styling */
+    .sidebar { position: fixed; top: 0; left: 0; width: var(--sb-width); height: 100vh; background: var(--sb-bg); color: #9ca3af; display: flex; flex-direction: column; z-index: 1100; }
+    .sidebar-brand { padding: 28px 24px 22px; border-bottom: 1px solid var(--sb-hover); }
+    .sidebar nav .nav-link { display: flex; align-items: center; gap: 13px; padding: 13px 24px; color: #9ca3af; border-left: 3px solid transparent; font-size: .875rem; text-decoration: none; transition: 0.18s; }
+    .sidebar nav .nav-link:hover, .sidebar nav .nav-link.active { background: var(--sb-hover); color: #fff; border-left-color: var(--gold); }
+    .sidebar-footer { padding: 18px 24px; border-top: 1px solid var(--sb-hover); }
+
+    .main-wrapper { margin-left: var(--sb-width); min-height: 100vh; padding: 36px 36px 60px; }
+    .activity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .activity-card { background: #fff; border-radius: var(--card-radius); box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,.04); padding: 22px; display: flex; flex-direction: column; gap: 14px; transition: 0.2s; }
+    .activity-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+
+    /* Status Badge & Icons */
+    .activity-meta-row { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: #4b5563; }
+    .activity-meta-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .summary-pill { background: #fff; border-radius: 12px; padding: 10px 20px; font-size: .82rem; box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,.04); display: flex; align-items: center; gap: 8px; }
+
+    @media (max-width: 991px) { .sidebar { left: -var(--sb-width); } .main-wrapper { margin-left: 0; padding: 24px 16px; } }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="font-moul text-white fs-5" id="brand-name">វត្តទេពបុរី</span>
+    <span class="d-block small opacity-50 mt-1">Admin Panel</span>
+  </div>
+  <nav class="flex-grow-1 mt-3">
+    <a href="index.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="members.html" class="nav-link"><i class="fa-solid fa-users"></i> អ្នកចុះឈ្មោះ (Donors)</a>
+    <a href="activities.html" class="nav-link active"><i class="fa-solid fa-dharmachakra"></i> សកម្មភាពសង្ឃ</a>
+    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> ការកំណត់</a>
+    <a href="lucky-draw.html"  class="nav-link"><i class="fa-solid fa-dharmachakra" style="color:var(--gold)"></i> <span style="color:var(--gold);font-weight:700">ចាប់ស្លាកបំងិល</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="#" class="nav-link text-danger" onclick="handleLogout(event)"><i class="fa-solid fa-right-from-bracket"></i> ចាកចេញ</a>
+  </div>
+</aside>
+
+<div class="main-wrapper">
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h4 class="page-title mb-0">សកម្មភាពសង្ឃ</h4>
+      <p class="page-subtitle mb-0">គ្រប់គ្រងព្រឹត្តិការណ៍ និងសកម្មភាពព្រះសង្ឃ</p>
+    </div>
+    <button class="btn btn-primary rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+      <i class="fa-solid fa-plus me-2"></i> បន្ថែមសកម្មភាព
+    </button>
+  </div>
+
+  <div class="summary-bar d-flex gap-3 mb-4 flex-wrap" id="summary-bar"></div>
+
+  <div class="d-flex gap-3 mb-4 flex-wrap align-items-center">
+    <select id="filterAct" class="form-select" style="max-width:200px;" onchange="renderActivities()">
+      <option value="all">ទាំងអស់</option>
+      <option value="upcoming">ខាងមុខ</option>
+      <option value="done">រួចហើយ</option>
+    </select>
+    <input id="searchAct" type="text" class="form-control" placeholder="🔍 ស្វែងរកចំណងជើង..." style="max-width:260px;" oninput="renderActivities()">
+  </div>
+
+  <div class="activity-grid" id="activity-grid">
+    <p class="text-muted">កំពុងទាញទិន្នន័យពី Firebase...</p>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script src="../js/firebase-config.js"></script>
+<script src="../js/data.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
+<script>
+  (function() {
+    // ឆែកមើល តើមានសញ្ញាសម្គាល់ថាបាន Login រួចឬនៅ?
+    if (sessionStorage.getItem('isAdmin') !== 'true') {
+        // បើអត់មានទេ ដេញវាទៅផ្ទាំង Login វិញភ្លាម
+        window.location.href = 'login.html';
+    }
+})();
+  const META_ICONS = {
+    date: { bg: "#eff6ff", color: "#3b82f6", icon: "fa-calendar-days" },
+    time: { bg: "#f0fdf4", color: "#22c55e", icon: "fa-clock" },
+    location: { bg: "#fff7ed", color: "#f59e0b", icon: "fa-location-dot" },
+    monks: { bg: "#fdf4ff", color: "#a855f7", icon: "fa-user-group" },
+  };
+
+  let allActivities = [];
+
+  (function () {
+    const s = DB.getSettings();
+    document.getElementById("brand-name").textContent = s.templeName;
+    
+    // ប្រើ Firebase Listener ដើម្បីទាញទិន្នន័យ Real-time
+    db.collection("activities").orderBy("date", "desc").onSnapshot((snapshot) => {
+      allActivities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderActivities();
+    });
+  })();
+
+  function renderActivities() {
+    const filter = document.getElementById("filterAct").value;
+    const search = document.getElementById("searchAct").value.toLowerCase();
+    
+    const list = allActivities.filter(a =>
+      (filter === "all" || a.status === filter) &&
+      (a.title + a.location).toLowerCase().includes(search)
+    );
+
+    // Update Summary Pills
+    const upcoming = allActivities.filter(a => a.status === "upcoming").length;
+    const done = allActivities.filter(a => a.status === "done").length;
+    const monksCount = allActivities.reduce((s, a) => s + (parseInt(a.monks) || 0), 0);
+    
+    document.getElementById("summary-bar").innerHTML = `
+      <div class="summary-pill"><i class="fa-solid fa-dharmachakra text-primary"></i> សរុប ${allActivities.length}</div>
+      <div class="summary-pill"><i class="fa-solid fa-hourglass-half text-warning"></i> ខាងមុខ ${upcoming}</div>
+      <div class="summary-pill"><i class="fa-solid fa-circle-check text-success"></i> រួចហើយ ${done}</div>
+      <div class="summary-pill"><i class="fa-solid fa-user-group" style="color:#a855f7"></i> ${monksCount} អង្គ</div>`;
+
+    const grid = document.getElementById("activity-grid");
+    if (!list.length) {
+      grid.innerHTML = `<div class="text-center py-5 w-100 opacity-50">មិនមានទិន្នន័យ</div>`;
+      return;
+    }
+
+    grid.innerHTML = list.map(a => `
+      <div class="activity-card">
+        <div class="d-flex justify-content-between">
+          <h5 class="fw-bold mb-0">${a.title}</h5>
+          ${statusBadge(a.status)}
+        </div>
+        <div class="activity-meta mt-2">
+          ${metaRow("date", a.date)}
+          ${metaRow("time", a.time || "—")}
+          ${metaRow("location", a.location || "—")}
+          ${metaRow("monks", `${a.monks || 0} អង្គ`)}
+        </div>
+        <div class="d-flex gap-2 mt-auto pt-3">
+          ${a.status === "upcoming" ? `<button class="btn btn-sm btn-success w-100" onclick="markDone('${a.id}')">រួចហើយ</button>` : ""}
+          <button class="btn btn-sm btn-light text-warning" onclick="openEditAct('${a.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm btn-light text-danger" onclick="deleteActivity('${a.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>`).join("");
+  }
+
+  function metaRow(type, text) {
+    const { bg, color, icon } = META_ICONS[type];
+    return `<div class="activity-meta-row mb-1">
+      <div class="activity-meta-icon" style="background:${bg}"><i class="fa-solid ${icon}" style="color:${color}"></i></div>
+      <span>${text}</span>
+    </div>`;
+  }
+
+  // Firebase CRUD Operations
+  async function addActivity() {
+    const data = {
+      title: document.getElementById("na-title").value.trim(),
+      date: document.getElementById("na-date").value,
+      time: document.getElementById("na-time").value,
+      location: document.getElementById("na-location").value.trim(),
+      monks: parseInt(document.getElementById("na-monks").value) || 0,
+      status: document.getElementById("na-status").value,
+      note: document.getElementById("na-note").value.trim()
+    };
+    if (!data.title || !data.date) return alert("សូមបំពេញព័ត៌មានចាំបាច់!");
+    
+    await db.collection("activities").add(data);
+    bootstrap.Modal.getInstance(document.getElementById("addActivityModal")).hide();
+    showToast("បន្ថែមសកម្មភាពរួចរាល់!");
+  }
+
+  async function markDone(id) {
+    await db.collection("activities").doc(id).update({ status: "done" });
+    showToast("បច្ចុប្បន្នភាពស្ថានភាពរួចរាល់!");
+  }
+
+  async function deleteActivity(id) {
+    if (!confirm("តើអ្នកចង់លុបសកម្មភាពនេះ?")) return;
+    await db.collection("activities").doc(id).delete();
+    showToast("លុបសកម្មភាពរួចរាល់!", "danger");
+  }
+
+  // Open Edit Modal
+  function openEditAct(id) {
+    const a = allActivities.find(x => x.id === id);
+    if (!a) return;
+    document.getElementById("ea-id").value = a.id;
+    document.getElementById("ea-title").value = a.title;
+    document.getElementById("ea-date").value = a.date;
+    document.getElementById("ea-time").value = a.time;
+    document.getElementById("ea-location").value = a.location;
+    document.getElementById("ea-monks").value = a.monks;
+    document.getElementById("ea-status").value = a.status;
+    document.getElementById("ea-note").value = a.note || "";
+    new bootstrap.Modal(document.getElementById("editActivityModal")).show();
+  }
+
+  async function saveActivityEdit() {
+    const id = document.getElementById("ea-id").value;
+    const data = {
+      title: document.getElementById("ea-title").value.trim(),
+      date: document.getElementById("ea-date").value,
+      time: document.getElementById("ea-time").value,
+      location: document.getElementById("ea-location").value.trim(),
+      monks: parseInt(document.getElementById("ea-monks").value) || 0,
+      status: document.getElementById("ea-status").value,
+      note: document.getElementById("ea-note").value.trim()
+    };
+    await db.collection("activities").doc(id).update(data);
+    bootstrap.Modal.getInstance(document.getElementById("editActivityModal")).hide();
+    showToast("កែប្រែរួចរាល់!");
+  }
+</script>
+</body>
+</html>

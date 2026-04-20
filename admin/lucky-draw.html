@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ចាប់ស្លាកបំងិល — វត្តទេពបុរី</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&family=Moul&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root{--gold:#D4AF37;--blue:#0047AB}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Kantumruy Pro',sans-serif;background:#0f172a;color:white;min-height:100vh;display:flex;overflow:hidden}
+    .font-moul{font-family:'Moul',cursive}
+    .sidebar-history{width:250px;flex-shrink:0;background:rgba(0,0,0,.4);border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;padding:18px 14px}
+    .sidebar-history h4{color:var(--gold);font-weight:700;border-bottom:1px solid rgba(212,175,55,.2);padding-bottom:10px;margin-bottom:12px;font-size:.85rem;text-align:center}
+    .history-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+    .history-list::-webkit-scrollbar{width:3px}
+    .history-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+    .history-item{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.05);border-radius:10px;padding:9px 12px;font-size:.78rem;animation:slideIn .4s ease-out}
+    @keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+    .h-name{color:rgba(255,255,255,.8);flex:1;padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .h-num{color:var(--gold);font-weight:800;font-size:.9rem;flex-shrink:0}
+    .summary-box{margin-top:12px;background:rgba(255,255,255,.05);border-radius:12px;padding:10px;text-align:center}
+    .summary-box p{font-size:.68rem;color:#94a3b8;margin-bottom:3px}
+    .s-count{font-size:1.3rem;font-weight:800;color:var(--gold)}
+    .s-sub{font-size:.65rem;color:#64748b;margin-top:2px}
+    .main-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;position:relative}
+    .draw-title{font-size:2.6rem;color:var(--gold);text-align:center;margin-bottom:6px;line-height:1.2}
+    .draw-sub{color:#93c5fd;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:30px;min-height:18px;text-align:center}
+    .draw-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:36px;padding:36px 48px;width:100%;max-width:620px;text-align:center;position:relative;overflow:hidden}
+    .card-bar{position:absolute;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gold),#f59e0b);transition:width 4s linear;width:0%}
+    .idle-q{font-size:9rem;color:rgba(255,255,255,.05);font-family:'Moul',cursive;line-height:1}
+    .idle-hint{color:rgba(255,255,255,.25);font-size:.9rem;margin-top:8px}
+    .active-view{display:none}
+    .cur-name{font-size:2.2rem;font-weight:800;color:white;min-height:52px;margin-bottom:10px;text-shadow:0 0 24px rgba(234,179,8,.4)}
+    .num-display{font-family:'Moul',cursive;font-size:9rem;line-height:1;font-weight:800;color:#f97316;text-shadow:0 0 40px rgba(249,115,22,.35);margin:8px 0;min-height:148px;display:flex;align-items:center;justify-content:center;transition:color .3s,text-shadow .3s,transform .3s}
+    .num-display.reveal{color:var(--gold);text-shadow:0 0 50px rgba(212,175,55,.7);transform:scale(1.08)}
+    .cur-village{color:#94a3b8;font-size:1rem;min-height:24px}
+    .done-overlay{position:absolute;inset:0;background:rgba(15,23,42,.93);display:none;flex-direction:column;align-items:center;justify-content:center;border-radius:36px;z-index:10}
+    .done-overlay.show{display:flex}
+    .btn-area{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:center}
+    .btn-start{background:var(--gold);color:#78350f;border:none;border-radius:50px;padding:15px 38px;font-size:1.1rem;font-weight:800;cursor:pointer;transition:.2s;box-shadow:0 8px 24px rgba(212,175,55,.4)}
+    .btn-start:hover{transform:translateY(-2px)}
+    .btn-start:active{transform:scale(.96)}
+    .btn-start:disabled{opacity:.4;cursor:not-allowed;transform:none !important}
+    .btn-pause{background:rgba(239,68,68,.15);color:#f87171;border:2px solid rgba(239,68,68,.3);border-radius:50px;padding:15px 30px;font-size:.95rem;font-weight:700;cursor:pointer;transition:.2s;display:none}
+    .btn-pause:hover{background:rgba(239,68,68,.25)}
+    .btn-back{background:transparent;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.12);border-radius:50px;padding:10px 20px;font-size:.8rem;cursor:pointer;text-decoration:none;transition:.2s}
+    .btn-back:hover{color:white;border-color:rgba(255,255,255,.35)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spin{animation:spin .8s linear infinite;display:inline-block}
+    @media(max-width:700px){
+      .sidebar-history{display:none}
+      .draw-title{font-size:1.8rem}
+      .num-display{font-size:6rem}
+      .cur-name{font-size:1.6rem}
+      .draw-card{padding:24px 20px}
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar-history">
+  <h4>📋 លទ្ធផលថ្មីៗ</h4>
+  <div class="history-list" id="historyList">
+    <div style="color:rgba(255,255,255,.25);font-size:.76rem;text-align:center;padding:20px 0">នៅទំនេរ...</div>
+  </div>
+  <div class="summary-box">
+    <p>ស្ថានភាព</p>
+    <div class="s-count"><span id="doneCount">0</span> / <span id="totalCount">—</span></div>
+    <div class="s-sub">ចាប់ស្លាករួច</div>
+  </div>
+</aside>
+
+<main class="main-area">
+  <h1 class="draw-title font-moul">ពិធីចាប់ស្លាកបុណ្យសាលាកភត្ត</h1>
+  <p id="drawStatus" class="draw-sub"><span class="spin">⏳</span> កំពុងផ្ទុក...</p>
+
+  <div class="draw-card">
+    <div class="card-bar" id="cardBar"></div>
+
+    <div id="idleView">
+      <div class="idle-q">?</div>
+      <div class="idle-hint">ចុច "ចាប់ផ្ដើម" ដើម្បីបំវិលចាប់ស្លាក</div>
+    </div>
+
+    <div class="active-view" id="activeView">
+      <div class="cur-name" id="curName">—</div>
+      <div class="num-display" id="numDisplay">—</div>
+      <div class="cur-village" id="curVillage">—</div>
+    </div>
+
+    <div class="done-overlay" id="doneOverlay">
+      <div style="font-size:4rem;margin-bottom:14px">🎉</div>
+      <h3 class="font-moul" style="color:var(--gold);margin-bottom:8px">ចប់ស្លាកហើយ!</h3>
+      <p style="color:#94a3b8;font-size:.85rem;margin-bottom:20px">ម្ចាស់សទ្ធាគ្រប់រូបបានចាប់ស្លាក</p>
+      <button onclick="resetDraw()"
+        style="background:var(--gold);color:#78350f;border:none;border-radius:50px;padding:11px 26px;font-weight:700;cursor:pointer">
+        ↺ ចាប់ផ្ដើមឡើងវិញ
+      </button>
+    </div>
+  </div>
+
+  <div class="btn-area">
+    <a href="index.html" class="btn-back">← ត្រឡប់ Admin</a>
+    <button id="startBtn" class="btn-start" onclick="startDraw()">▶ ចាប់ផ្ដើមមហាសំណាង</button>
+    <button id="pauseBtn" class="btn-pause" onclick="togglePause()">⏸ ផ្អាក</button>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/data.js"></script>
+<script>
+let members=[], shuffledNums=[], drawIndex=0, isPaused=false, isRunning=false, shuffleHandle=null;
+
+function shuffleArr(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+async function loadMembers() {
+    try {
+        setStatus('<span class="spin">⏳</span> កំពុងទាញទិន្នន័យ...');
+        
+        // ១. ទាញយកអ្នកដែលមិនទាន់បានចាប់ (status != 'picked')
+        const snapshot = await db.collection("members")
+                                 .where("status", "!=", "picked") 
+                                 .get();
+        
+        // ២. រក្សាទុកក្នុង variable 'members' (Global variable ដែលយើងប្រើក្នុង startDraw)
+        members = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // ៣. រៀបចំលេខសម្រាប់បង្វិល (ចាប់ពីលេខ ១ ដល់ចំនួនមនុស្សសរុប)
+        let numList = [];
+        for (let i = 1; i <= members.length; i++) {
+            numList.push(i);
+        }
+        shuffledNums = shuffleArr(numList); // បង្វិលលេខឱ្យចៃដន្យទុកជាមុន
+
+        // ៤. បង្ហាញចំនួនសរុបលើអេក្រង់
+        document.getElementById('totalCount').innerText = members.length;
+        document.getElementById('doneCount').innerText = "0";
+        drawIndex = 0; // reset index
+
+        if (members.length === 0) {
+            setStatus('⚠️ មិនមានម្ចាស់សទ្ធាដែលត្រូវចាប់ស្លាកទេ');
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('idleView').innerHTML = `
+                <div class="idle-q">!</div>
+                <div class="idle-hint text-danger">មិនមានឈ្មោះក្នុងបញ្ជីដែលត្រូវចាប់ស្លាកឡើយ</div>
+            `;
+        } else {
+            setStatus(`រួចរាល់៖ មានម្ចាស់សទ្ធា ${members.length} នាក់ក្នុងបញ្ជី`);
+            document.getElementById('startBtn').disabled = false;
+        }
+    } catch (error) {
+        console.error("Error loading members: ", error);
+        setStatus('❌ មានកំហុសក្នុងការទាញទិន្នន័យ');
+    }
+}
+
+function startDraw(){
+  if(!members.length) return;
+  document.getElementById('startBtn').style.display='none';
+  document.getElementById('pauseBtn').style.display='block';
+  document.getElementById('idleView').style.display='none';
+  document.getElementById('activeView').style.display='block';
+  isRunning=true; isPaused=false;
+  runStep();
+}
+
+async function runStep(){
+  if(!isRunning||isPaused) return;
+  if(drawIndex>=members.length){finishDraw();return;}
+
+  const member=members[drawIndex];
+  const finalNum=shuffledNums[drawIndex]; // transparent: pre-shuffled
+
+  document.getElementById('curName').textContent=member.name;
+  document.getElementById('curVillage').textContent='📍 '+(member.village||'');
+  setStatus(`ចាប់ (${drawIndex+1}/${members.length}) — ${member.name}`);
+
+  const bar=document.getElementById('cardBar');
+  bar.style.transition='none'; bar.style.width='0%';
+
+  const numEl=document.getElementById('numDisplay');
+  numEl.classList.remove('reveal');
+  numEl.textContent='??';
+
+  shuffleHandle=setInterval(()=>{
+    numEl.textContent=String(Math.floor(Math.random()*members.length)+1).padStart(2,'0');
+  },65);
+
+  await sleep(2500);
+  clearInterval(shuffleHandle);
+  if(!isRunning||isPaused) return;
+
+  // Reveal
+  numEl.textContent=String(finalNum).padStart(2,'0');
+  numEl.classList.add('reveal');
+
+  // Update Firebase — multi-pick logic
+  try{
+    const mc3   = member.monkCount || 1;
+    const done3 = member.picksDone || 0;
+    const newDone = done3 + 1;
+    const newStat = newDone >= mc3 ? 'picked' : 'partial';
+    const pickEntry = { monkPhone: '(ចាប់ lucky-draw)', pickedAt: new Date().toISOString() };
+    await db.collection('members').doc(member.id).update({
+      queueNumber: finalNum,
+      status     : member.status==='pending' ? 'ready' : newStat,
+    });
+  }catch(e){console.error('Firebase:',e);}
+
+  confetti({particleCount:120,spread:65,origin:{y:.65}});
+  addHistory(member.name,String(finalNum).padStart(2,'0'));
+  drawIndex++;
+  document.getElementById('doneCount').textContent=drawIndex;
+
+  bar.style.transition='width 4s linear'; bar.style.width='100%';
+  await sleep(4000);
+  if(!isRunning||isPaused) return;
+  runStep();
+}
+
+function togglePause(){
+  isPaused=!isPaused;
+  const btn=document.getElementById('pauseBtn');
+  if(isPaused){
+    clearInterval(shuffleHandle);
+    btn.textContent='▶ បន្ត';
+    btn.style.cssText='display:block;background:rgba(34,197,94,.15);color:#4ade80;border:2px solid rgba(34,197,94,.3);border-radius:50px;padding:15px 30px;font-size:.95rem;font-weight:700;cursor:pointer';
+    setStatus('⏸ ផ្អាករួច — ចុច "បន្ត" ដើម្បីបន្ត');
+  }else{
+    btn.textContent='⏸ ផ្អាក';
+    btn.style.cssText='display:block;background:rgba(239,68,68,.15);color:#f87171;border:2px solid rgba(239,68,68,.3);border-radius:50px;padding:15px 30px;font-size:.95rem;font-weight:700;cursor:pointer';
+    runStep();
+  }
+}
+
+function finishDraw(){
+  isRunning=false;
+  document.getElementById('pauseBtn').style.display='none';
+  document.getElementById('doneOverlay').classList.add('show');
+  setStatus('🎉 ចប់ស្លាកគ្រប់គ្នាហើយ!');
+  for(let i=0;i<4;i++) setTimeout(()=>confetti({particleCount:200,spread:110,origin:{y:.5},scalar:1.3}),i*350);
+}
+
+async function resetDraw(){
+  drawIndex=0; isRunning=false; isPaused=false;
+  clearInterval(shuffleHandle);
+  document.getElementById('doneOverlay').classList.remove('show');
+  document.getElementById('idleView').style.display='block';
+  document.getElementById('activeView').style.display='none';
+  document.getElementById('startBtn').style.display='block';
+  document.getElementById('pauseBtn').style.display='none';
+  document.getElementById('doneCount').textContent='0';
+  document.getElementById('cardBar').style.width='0%';
+  document.getElementById('historyList').innerHTML='<div style="color:rgba(255,255,255,.25);font-size:.76rem;text-align:center;padding:20px 0">នៅទំនេរ...</div>';
+  await loadMembers();
+}
+
+function addHistory(name,num){
+  const list=document.getElementById('historyList');
+  const ph=list.querySelector('div[style]');
+  if(ph) ph.remove();
+  const el=document.createElement('div');
+  el.className='history-item';
+  el.innerHTML=`<span class="h-name">${name}</span><span class="h-num">${num}</span>`;
+  list.prepend(el);
+}
+
+function setStatus(html){document.getElementById('drawStatus').innerHTML=html;}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+window.addEventListener('DOMContentLoaded',loadMembers);
+</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR ចាប់ស្លាក — វត្តទេពបុរី</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&family=Moul&display=swap" rel="stylesheet">
+  <style>
+    :root { --gold: #D4AF37; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Kantumruy Pro', sans-serif;
+      background: #0b1120;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 36px;
+      padding: 40px 36px;
+      text-align: center;
+      max-width: 360px;
+      width: 100%;
+    }
+
+    h2 { font-family: 'Moul', cursive; font-size: 1.4rem; color: var(--gold); margin-bottom: 4px; }
+    .sub { font-size: .78rem; color: rgba(255,255,255,.4); letter-spacing: .1em; margin-bottom: 28px; text-transform: uppercase; }
+
+    /* QR wrapper */
+    #qr-wrap {
+      background: white;
+      border-radius: 20px;
+      padding: 16px;
+      display: inline-block;
+      margin-bottom: 24px;
+      transition: opacity .3s;
+    }
+    #qr-wrap.refreshing { opacity: .3; }
+    #qrcode img, #qrcode canvas { display: block; }
+
+    /* Countdown ring */
+    .ring-wrap { position: relative; width: 72px; height: 72px; margin: 0 auto 10px; }
+    .ring-wrap svg { transform: rotate(-90deg); }
+    .ring-bg   { stroke: rgba(255,255,255,.12); }
+    .ring-fill { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+    .ring-num  {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-size: 1.5rem; font-weight: 800; color: var(--gold);
+    }
+
+    .hint { font-size: .72rem; color: rgba(255,255,255,.3); margin-top: 4px; }
+
+    /* Status dot */
+    .status-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; font-size: .78rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 1.4s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .dot.syncing { background: #f59e0b; }
+    .dot.error   { background: #ef4444; animation: none; }
+
+    /* Manual refresh btn */
+    .btn-manual {
+      background: transparent; border: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.4); border-radius: 20px; padding: 6px 18px;
+      font-size: .75rem; cursor: pointer; margin-top: 14px;
+      transition: .2s;
+    }
+    .btn-manual:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* URL input styling */
+    #url-box { margin-top:20px; text-align:left; }
+    #url-input {
+      width: 100%; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 10px; color: white; padding: 8px 12px; font-size: .72rem; outline: none; margin-top: 5px;
+    }
+
+    .back-link { display: inline-block; margin-top: 20px; font-size: .78rem; color: rgba(255,255,255,.35); text-decoration: none; }
+    .back-link:hover { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>វត្តទេពបុរី</h2>
+  <p class="sub">Scan QR · ចាប់ស្លាក</p>
+
+  <div id="qr-wrap">
+    <div id="qrcode"></div>
+  </div>
+
+  <div class="ring-wrap">
+    <svg width="72" height="72">
+      <circle class="ring-bg" cx="36" cy="36" r="30" stroke-width="4" fill="none"/>
+      <circle id="ring" class="ring-fill" cx="36" cy="36" r="30"
+              stroke-width="4" fill="none"
+              stroke-dasharray="188.5" stroke-dashoffset="0"/>
+    </svg>
+    <div class="ring-num" id="cnt">20</div>
+  </div>
+  <p class="hint">QR ដូរថ្មីរៀងរាល់ ២០ វិនាទី</p>
+
+  <div class="status-row">
+    <div class="dot" id="dot"></div>
+    <span id="status-label">ប្រព័ន្ធដំណើរការ</span>
+  </div>
+
+  <div id="url-box">
+    <div style="font-size:.7rem;color:rgba(255,255,255,.4);text-transform:uppercase">URL គេហទំព័រ (monk.html)</div>
+    <input id="url-input" type="text" spellcheck="false" placeholder="https://...">
+    <button onclick="applyUrl()" style="margin-top:8px; width:100%; background:var(--gold); border:none; border-radius:10px; color:#78350f; font-weight:700; padding:8px; cursor:pointer; font-size:.75rem;">
+      ✓ រក្សាទុក URL
+    </button>
+  </div>
+
+  <button class="btn-manual" onclick="forceRefresh()">↺ ផ្លាស់ប្ដូរ QR ដោយដៃ</button>
+
+  <br>
+  <a class="back-link" href="index.html">← ត្រឡប់ Admin</a>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/data.js"></script>
+<script>
+/* ════════════════════════════════════════════
+    QR GENERATOR — កែសម្រួលរយៈពេល ២០ វិនាទី
+   ════════════════════════════════════════════ */
+
+const FIREBASE_URL = "https://tepborey.web.app/monk.html"; // ដូរតាម URL ពិតរបស់អ្នក
+const LS_KEY       = "tepborey_qr_base_url";
+const INTERVAL     = 20; // ២០ វិនាទី
+const CIRCUMF      = 2 * Math.PI * 30;
+
+const qrEl     = document.getElementById("qrcode");
+const ringEl   = document.getElementById("ring");
+const cntEl    = document.getElementById("cnt");
+const dotEl    = document.getElementById("dot");
+const lblEl    = document.getElementById("status-label");
+const wrapEl   = document.getElementById("qr-wrap");
+const urlInput = document.getElementById("url-input");
+
+let BASE_URL = localStorage.getItem(LS_KEY) || FIREBASE_URL;
+urlInput.value = BASE_URL;
+
+const qr = new QRCode(qrEl, {
+  width: 240, height: 240,
+  correctLevel: QRCode.CorrectLevel.H
+});
+
+let timeLeft = INTERVAL;
+let currentToken = "";
+
+function applyUrl() {
+  let url = urlInput.value.trim();
+  if (!url) return;
+  if (!url.includes("monk.html")) {
+    url = url.replace(/\/$/, "") + "/monk.html";
+  }
+  BASE_URL = url;
+  localStorage.setItem(LS_KEY, BASE_URL);
+  urlInput.value = BASE_URL;
+  forceRefresh();
+}
+
+function makeToken() {
+  return Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,9);
+}
+
+async function refreshQR() {
+  wrapEl.classList.add("refreshing");
+  dotEl.className = "dot syncing";
+  lblEl.textContent = "កំពុងបង្កើត...";
+
+  currentToken = makeToken();
+  const fullUrl = `${BASE_URL}?t=${currentToken}`;
+
+  qr.makeCode(fullUrl);
+
+  try {
+    // រក្សាទុក Token ចូល Firestore ដើម្បីឱ្យ monk.html ផ្ទៀងផ្ទាត់
+    await DB.publishQRToken(currentToken);
+    dotEl.className = "dot";
+    lblEl.textContent = "ប្រព័ន្ធដំណើរការ ✓";
+  } catch (err) {
+    dotEl.className = "dot error";
+    lblEl.textContent = "Firestore Error!";
+    console.error(err);
+  }
+
+  wrapEl.classList.remove("refreshing");
+  timeLeft = INTERVAL;
+  drawRing(INTERVAL);
+}
+
+function drawRing(t) {
+  const offset = CIRCUMF * (1 - t / INTERVAL);
+  ringEl.style.strokeDashoffset = offset;
+  cntEl.textContent = t;
+}
+
+setInterval(() => {
+  timeLeft--;
+  if (timeLeft <= 0) {
+    refreshQR();
+  } else {
+    drawRing(timeLeft);
+  }
+}, 1000);
+
+function forceRefresh() { refreshQR(); }
+
+refreshQR();
+</script>
+</body>
+</html>

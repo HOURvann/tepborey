@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tepborey Admin — ការកំណត់ (Settings)</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Moul&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#D4AF37">
+  <style>
+    :root {
+      --sb-width: 260px; --sb-bg: #111827; --sb-hover: #1f2937;
+      --gold: #D4AF37; --body-bg: #f1f5f9; --card-radius: 18px;
+      --card-shadow: 0 2px 12px rgba(0,0,0,.05);
+    }
+    body { font-family: 'Kantumruy Pro', sans-serif; background: var(--body-bg); overflow-x: hidden; }
+    .font-moul { font-family: 'Moul', cursive; }
+
+    /* Sidebar */
+    .sidebar { position: fixed; top: 0; left: 0; width: var(--sb-width); height: 100vh; background: var(--sb-bg); color: #9ca3af; display: flex; flex-direction: column; z-index: 1100; }
+    .sidebar-brand { padding: 28px 24px 22px; border-bottom: 1px solid var(--sb-hover); }
+    .sidebar nav .nav-link { display: flex; align-items: center; gap: 13px; padding: 13px 24px; color: #9ca3af; border-left: 3px solid transparent; font-size: .875rem; text-decoration: none; transition: 0.18s; }
+    .sidebar nav .nav-link:hover, .sidebar nav .nav-link.active { background: var(--sb-hover); color: #fff; border-left-color: var(--gold); }
+    .sidebar-footer { padding: 18px 24px; border-top: 1px solid var(--sb-hover); }
+
+    .main-wrapper { margin-left: var(--sb-width); min-height: 100vh; padding: 36px 36px 60px; }
+    .settings-section { background: #fff; border-radius: var(--card-radius); box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,.04); overflow: hidden; margin-bottom: 24px; max-width: 680px; }
+    .settings-section-header { padding: 18px 24px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; }
+    .settings-section-body { padding: 24px; }
+
+    .sys-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f8fafc; }
+    .sys-row:last-child { border: none; }
+    .data-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f8fafc; font-size: .875rem; }
+    
+    .danger-zone { border: 1px solid #fca5a5; border-radius: var(--card-radius); padding: 24px; max-width: 680px; background: #fff; }
+    .progress { height: 8px; border-radius: 99px; }
+
+    #lockBar { display: none; align-items: center; gap: 10px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px; padding: 12px 20px; color: #dc2626; font-size: .82rem; font-weight: 600; margin-bottom: 24px; }
+    @media (max-width: 991px) { .sidebar { left: -var(--sb-width); } .main-wrapper { margin-left: 0; padding: 24px 16px; } }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="font-moul text-white fs-5" id="brand-name">វត្តទេពបុរី</span>
+    <span class="d-block small opacity-50 mt-1">Admin Panel</span>
+  </div>
+  <nav class="flex-grow-1 mt-3">
+    <a href="index.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="members.html" class="nav-link"><i class="fa-solid fa-users"></i> អ្នកចុះឈ្មោះ (Donors)</a>
+    <a href="activities.html" class="nav-link"><i class="fa-solid fa-dharmachakra"></i> សកម្មភាពសង្ឃ</a>
+    <a href="settings.html" class="nav-link active"><i class="fa-solid fa-gear"></i> ការកំណត់</a>
+    <a href="lucky-draw.html"  class="nav-link"><i class="fa-solid fa-dharmachakra" style="color:var(--gold)"></i> <span style="color:var(--gold);font-weight:700">ចាប់ស្លាកបំងិល</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="#" class="nav-link text-danger" onclick="handleLogout(event)"><i class="fa-solid fa-right-from-bracket"></i> ចាកចេញ</a>
+  </div>
+</aside>
+
+<div class="main-wrapper">
+  <div class="mb-5">
+    <h4 class="page-title mb-0">ការកំណត់</h4>
+    <p class="page-subtitle">គ្រប់គ្រងការកំណត់ប្រព័ន្ធ Admin</p>
+  </div>
+
+  <div id="lockBar"><i class="fa-solid fa-triangle-exclamation fa-lg"></i> ការចុះឈ្មោះត្រូវបានបិទ</div>
+
+  <div class="settings-section">
+    <div class="settings-section-header">
+      <div class="settings-section-icon" style="background:#eff6ff"><i class="fa-solid fa-circle-info" style="color:#3b82f6"></i></div>
+      <h5 class="settings-section-title">ព័ត៌មានទូទៅ</h5>
+    </div>
+    <div class="settings-section-body">
+      <div class="row g-3">
+        <div class="col-12"><label class="form-label">ឈ្មោះវត្ត</label><input id="set-temple" type="text" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">ឈ្មោះ Admin</label><input id="set-admin" type="text" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">លេខទូរស័ព្ទ</label><input id="set-phone" type="tel" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">ចំនួន Donors អតិបរមា</label><input id="set-max" type="number" class="form-control"></div>
+        <div class="col-12 pt-2 d-flex gap-2">
+          <button class="btn btn-primary fw-bold px-4" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុក</button>
+          <button class="btn btn-light" onclick="resetSettings()"><i class="fa-solid fa-rotate-left me-2"></i> កំណត់ឡើងវិញ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-header">
+      <div class="settings-section-icon" style="background:#f0fdf4"><i class="fa-solid fa-server" style="color:#22c55e"></i></div>
+      <h5 class="settings-section-title">ស្ថានភាពប្រព័ន្ធ</h5>
+    </div>
+    <div class="settings-section-body">
+      <div class="sys-row">
+        <div><div class="sys-row-label">ការចុះឈ្មោះ</div><div class="sys-row-desc">ផ្អាក ឬ បើកការចុះឈ្មោះពី Public Form</div></div>
+        <button class="btn btn-danger fw-bold js-lock-btn" onclick="toggleLock()"><i class="fa-solid fa-lock me-2"></i> បិទ</button>
+      </div>
+      <div class="sys-row">
+        <div><div class="sys-row-label">ចំណុះ Donors</div><div class="sys-row-desc" id="cap-desc">កំពុងទាញទិន្នន័យ...</div></div>
+        <span id="cap-badge" class="badge rounded-pill px-3 py-2">—</span>
+      </div>
+      <div class="sys-row"><div style="flex:1"><div class="progress"><div id="cap-bar" class="progress-bar bg-primary" style="width:0%"></div></div><div class="small text-muted mt-1" id="cap-bar-label"></div></div></div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-header">
+      <div class="settings-section-icon" style="background:#fdf4ff"><i class="fa-solid fa-database" style="color:#a855f7"></i></div>
+      <h5 class="settings-section-title">ទិន្នន័យប្រព័ន្ធ</h5>
+    </div>
+    <div class="settings-section-body" id="data-overview"></div>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">លេខកូដ Master PIN (សម្រាប់ Staff)</label>
+    <input id="set-master-pin" type="password" class="form-control" placeholder="ឧ. 1234">
+</div>
+
+  <div class="danger-zone mb-4">
+    <h5><i class="fa-solid fa-triangle-exclamation me-2"></i> Danger Zone</h5>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-outline-danger fw-bold" onclick="clearMembers()"><i class="fa-solid fa-user-slash me-2"></i> លុប Donors ទាំងអស់</button>
+      <button class="btn btn-outline-danger fw-bold" onclick="clearActivities()"><i class="fa-solid fa-trash me-2"></i> លុបសកម្មភាពទាំងអស់</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/data.js"></script>
+
+<script>
+  (function() {
+    // ឆែកមើល តើមានសញ្ញាសម្គាល់ថាបាន Login រួចឬនៅ?
+    if (sessionStorage.getItem('isAdmin') !== 'true') {
+        // បើអត់មានទេ ដេញវាទៅផ្ទាំង Login វិញភ្លាម
+        window.location.href = 'login.html';
+    }
+})();
+  (function () {
+    loadSettingsForm();
+    applyLockUI();
+    // ប្រើ Firebase Listener ដើម្បី Update ស្ថានភាព Real-time
+    db.collection("members").onSnapshot(() => updateStatus());
+    db.collection("activities").onSnapshot(() => updateStatus());
+  })();
+
+  function loadSettingsForm() {
+    const s = DB.getSettings(); //
+    document.getElementById("brand-name").textContent = s.templeName;
+    document.getElementById("set-temple").value = s.templeName;
+    document.getElementById("set-admin").value  = s.adminName;
+    document.getElementById("set-phone").value  = s.phone;
+    document.getElementById("set-max").value    = s.maxDonors;
+  }
+
+  function saveSettings() {
+    const s = {
+      templeName: document.getElementById("set-temple").value.trim() || "វត្តទេពបុរី",
+      adminName : document.getElementById("set-admin").value.trim()  || "Admin",
+      phone     : document.getElementById("set-phone").value.trim(),
+      maxDonors : parseInt(document.getElementById("set-max").value) || 150,
+    };
+    DB.saveSettings(s); //
+    document.getElementById("brand-name").textContent = s.templeName;
+    showToast("ការកំណត់ត្រូវបានរក្សាទុក!");
+  }
+
+  function updateStatus() {
+    const s = DB.getSettings();
+    const members = DB.getMembers(); //
+    const acts = DB.getActivities();
+    
+    const pct = Math.min(100, Math.round((members.length / s.maxDonors) * 100));
+    const full = members.length >= s.maxDonors;
+
+    document.getElementById("cap-desc").textContent = `អ្នកចុះឈ្មោះ ${members.length} / ${s.maxDonors} នាក់`;
+    document.getElementById("cap-bar").style.width = pct + "%";
+    document.getElementById("cap-bar-label").textContent = `${pct}% — ${full ? "ពេញហើយ!" : `នៅសល់ ${s.maxDonors - members.length} កន្លែង`}`;
+    
+    const badge = document.getElementById("cap-badge");
+    badge.textContent = full ? "ពេញ" : "មានកន្លែង";
+    badge.className = `badge rounded-pill px-3 py-2 ${full ? "bg-danger" : "bg-success"}`;
+
+    const picked = members.filter(m => m.status === "picked").length;
+    document.getElementById("data-overview").innerHTML = [
+      ["ចុះឈ្មោះសរុប", members.length],
+      ["ចាប់រួច", picked],
+      ["កំពុងរង់ចាំ", members.length - picked],
+      ["សកម្មភាពសរុប", acts.length]
+    ].map(([label, val]) => `<div class="data-row"><span class="data-label">${label}</span><span class="data-val">${val}</span></div>`).join("");
+  }
+
+  // Danger Zone functions គួរតែមានការ Check សិទ្ធិ Admin មុននឹងលុបទិន្នន័យពី Firebase
+</script>
+</body>
+</html>

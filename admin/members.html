@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tepborey Admin — អ្នកចុះឈ្មោះ</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Moul&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#D4AF37">
+  <style>
+    :root {
+      --sb-width:260px; --sb-bg:#111827; --sb-hover:#1f2937;
+      --gold:#D4AF37; --body-bg:#f1f5f9;
+      --card-radius:18px; --card-shadow:0 2px 12px rgba(0,0,0,.05);
+      --panel-w:400px;
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    body{font-family:'Kantumruy Pro',sans-serif;background:var(--body-bg);overflow-x:hidden}
+    .font-moul{font-family:'Moul',cursive}
+
+    /* Sidebar */
+    .sidebar{position:fixed;top:0;left:0;width:var(--sb-width);height:100vh;background:var(--sb-bg);color:#9ca3af;display:flex;flex-direction:column;z-index: 1100}
+    .sidebar-brand{padding:28px 24px 22px;border-bottom:1px solid var(--sb-hover)}
+    .sidebar nav .nav-link{display:flex;align-items:center;gap:13px;padding:13px 24px;color:#9ca3af;border-left:3px solid transparent;font-size:.875rem;text-decoration:none;transition:.18s}
+    .sidebar nav .nav-link i{width:20px;font-size:16px;flex-shrink:0}
+    .sidebar nav .nav-link:hover,.sidebar nav .nav-link.active{background:var(--sb-hover);color:#fff;border-left-color:var(--gold)}
+    .sidebar-footer{padding:18px 24px;border-top:1px solid var(--sb-hover)}
+
+    /* Main */
+    .main-wrapper{margin-left:var(--sb-width);min-height:100vh;padding:36px 36px 60px;transition:margin-right .28s}
+    .main-wrapper.panel-open{margin-right:var(--panel-w)}
+
+    /* Table card */
+    .content-card{background:#fff;border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid rgba(0,0,0,.04);overflow:hidden}
+    .table-custom thead th{background:#f8fafc;color:#6b7280;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:12px 18px;border-bottom:1px solid #f1f5f9;font-weight:600}
+    .table-custom tbody td{padding:13px 18px;vertical-align:middle;border-bottom:1px solid #f8fafc;font-size:.875rem}
+    .table-custom tbody tr:last-child td{border-bottom:none}
+    .table-custom tbody tr{cursor:pointer;transition:background .1s}
+    .table-custom tbody tr:hover{background:#f0f7ff}
+    .table-custom tbody tr.row-selected{background:#dbeafe;box-shadow:inset 3px 0 0 #3b82f6}
+
+    /* Filter bar */
+    .filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+    .filter-bar .form-control,.filter-bar .form-select{border-radius:10px;border:1px solid #e2e8f0;font-size:.875rem}
+    .form-control:focus,.form-select:focus{box-shadow:0 0 0 3px rgba(59,130,246,.15);border-color:#3b82f6}
+
+    /* ── DETAIL PANEL ── */
+    .detail-panel{
+      position:fixed;top:0;right:0;width:var(--panel-w);height:100vh;
+      background:#fff;z-index:1050;
+      box-shadow:-6px 0 30px rgba(0,0,0,.1);
+      display:flex;flex-direction:column;
+      transform:translateX(100%);transition:transform .28s ease;
+      border-left:1px solid #e5e7eb;
+    }
+    .detail-panel.open{transform:translateX(0)}
+
+    .dp-header{padding:20px 22px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .dp-body{flex:1;overflow-y:auto;padding:22px}
+    .dp-footer{padding:14px 22px;border-top:1px solid #f1f5f9;display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+
+    .dp-avatar{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;margin:0 auto 16px;font-family:'Moul',cursive}
+    .info-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #f8fafc}
+    .info-row:last-child{border:none}
+    .info-label{font-size:.72rem;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .info-val{font-size:.88rem;font-weight:700;text-align:right;max-width:62%;word-break:break-all}
+    .queue-badge{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;font-size:1.3rem;font-weight:800;box-shadow:0 4px 14px rgba(59,130,246,.3)}
+
+    /* Form inside panel */
+    .form-label{font-size:.76rem;font-weight:600;color:#374151}
+
+    /* Lock bar */
+    #lockBar{display:none;align-items:center;gap:10px;background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:12px 18px;color:#dc2626;font-size:.82rem;font-weight:600;margin-bottom:22px}
+
+    .modal-content{border-radius:20px;border:none}
+    .modal-header{border-bottom:1px solid #f1f5f9;padding:18px 22px}
+    .modal-body{padding:22px}
+    .modal-footer{border-top:1px solid #f1f5f9;padding:14px 22px}
+
+    .page-title{font-size:1.5rem;font-weight:700}
+    .page-subtitle{font-size:.8rem;color:#6b7280}
+
+    @media(max-width:991px){
+      .sidebar{left:-260px}
+      .main-wrapper{margin-left:0;padding:20px 14px}
+      .main-wrapper.panel-open{margin-right:0}
+      .detail-panel{width:100vw}
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="font-moul text-white fs-5" id="brand-name">វត្តទេពបុរី</span>
+    <span class="d-block small opacity-50 mt-1">Admin Panel</span>
+  </div>
+  <nav class="flex-grow-1 mt-3">
+    <a href="index.html"      class="nav-link"><i class="fa-solid fa-chart-line"></i>   Dashboard</a>
+    <a href="members.html"    class="nav-link active"><i class="fa-solid fa-users"></i> អ្នកចុះឈ្មោះ</a>
+    <a href="activities.html" class="nav-link"><i class="fa-solid fa-dharmachakra"></i> សកម្មភាពសង្ឃ</a>
+    <a href="settings.html"   class="nav-link"><i class="fa-solid fa-gear"></i>         ការកំណត់</a>
+    <a href="lucky-draw.html"  class="nav-link"><i class="fa-solid fa-dharmachakra" style="color:var(--gold)"></i> <span style="color:var(--gold);font-weight:700">ចាប់ស្លាកបំងិល</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="#" class="nav-link text-danger" onclick="handleLogout(event)">
+      <i class="fa-solid fa-right-from-bracket"></i> ចាកចេញ
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper" id="mainWrapper">
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h4 class="page-title mb-0">អ្នកចុះឈ្មោះ (Donors)</h4>
+      <p class="page-subtitle mb-0" id="count-label">សរុប 0 នាក់</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button id="lockBtn" class="btn btn-danger rounded-pill px-3 fw-bold" onclick="toggleLock()">
+        <i class="fa-solid fa-lock me-1"></i> បិទការចុះឈ្មោះ
+      </button>
+      <button class="btn btn-warning rounded-pill px-3 fw-bold text-dark" onclick="openGenModal()">
+        <i class="fa-solid fa-hashtag me-1"></i> ដាក់លេខរៀង
+      </button>
+      <button class="btn btn-success rounded-pill px-3 fw-bold" onclick="openAdminPickModal()">
+        <i class="fa-solid fa-hand-pointer me-1"></i> ចាប់ជំនួស
+      </button>
+      <a href="qr-generator.html" class="btn btn-dark rounded-pill px-3 fw-bold" target="_blank">
+        <i class="fa-solid fa-qrcode me-1"></i> QR
+      </a>
+      <button class="btn btn-primary rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addModal">
+        <i class="fa-solid fa-plus me-1"></i> បន្ថែមថ្មី
+      </button>
+    </div>
+  </div>
+
+  <div id="lockBar"><i class="fa-solid fa-triangle-exclamation"></i> ការចុះឈ្មោះត្រូវបានបិទ</div>
+
+  <div class="filter-bar">
+    <input id="searchInput" type="text" class="form-control" placeholder="🔍 ស្វែងរក..." style="max-width:280px" oninput="applyFilter()">
+    <select id="filterStatus" class="form-select" style="max-width:170px" onchange="applyFilter()">
+      <option value="all">ស្ថានភាពទាំងអស់</option>
+      <option value="pending">កំពុងរង់ចាំ</option>
+      <option value="ready">បានលេខរៀង</option>
+      <option value="picked">ចាប់រួច</option>
+    </select>
+    <button class="btn btn-outline-success btn-sm rounded-pill px-3" onclick="exportExcel()">
+      <i class="fa-solid fa-file-excel me-1"></i> Excel
+    </button>
+    <span class="small text-muted ms-1" id="filter-info"></span>
+  </div>
+
+  <div class="content-card">
+    <div class="table-responsive">
+      <table class="table table-hover table-custom mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ឈ្មោះពុទ្ធបរិស័ទ</th>
+            <th>ព្រះសង្ឃ</th>
+            <th>លេខរៀង</th>
+            <th>ស្ថានភាព</th>
+            <th>ចាប់ដោយ</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="members-tbody">
+          <tr><td colspan="7" class="text-center py-5 text-muted">
+            <div class="spinner-border spinner-border-sm me-2 text-primary"></div> កំពុងផ្ទុក...
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top" id="paginationBar" style="display:none!important">
+      <span class="small text-muted" id="paginationInfo"></span>
+      <ul class="pagination pagination-sm mb-0" id="paginationList"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DETAIL SLIDE PANEL ══ -->
+<div class="detail-panel" id="detailPanel">
+  <div class="dp-header">
+    <div>
+      <h6 class="fw-bold mb-0" id="dp-title">ព័ត៌មានលម្អិត</h6>
+      <small class="text-muted" id="dp-sub"></small>
+    </div>
+    <button class="btn btn-sm btn-light" style="border-radius:50%;width:34px;height:34px;padding:0" onclick="closePanel()">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <div class="dp-body">
+    <!-- VIEW -->
+    <div id="viewSec">
+      <div class="text-center mb-4">
+        <div class="dp-avatar" id="dp-avatar">?</div>
+        <h5 class="fw-bold mb-1" id="dp-name-big"></h5>
+        <div id="dp-badge-big"></div>
+      </div>
+
+      <!-- Queue number highlight -->
+      <div id="dp-queue-box" class="text-center mb-4 p-3 rounded-3" style="background:#eff6ff;display:none">
+        <div class="small text-muted fw-bold mb-2">លេខរៀង</div>
+        <div class="queue-badge mx-auto" id="dp-queue-num">00</div>
+      </div>
+
+      <!-- Picked info -->
+      <div id="dp-picked-box" class="mb-4 p-3 rounded-3" style="background:#f0fdf4;display:none">
+        <div class="small fw-bold text-success mb-1"><i class="fa-solid fa-circle-check me-1"></i>ចាប់ចំឈ្មោះហើយ</div>
+        <div class="small text-muted">ព្រះតេជគុណ (លេខ)</div>
+        <div class="fw-bold fs-6" id="dp-pickedBy"></div>
+      </div>
+
+      <!-- Info fields -->
+      <div id="dp-info"></div>
+    </div>
+
+    <!-- EDIT -->
+    <div id="editSec" style="display:none">
+      <h6 class="fw-bold mb-4"><i class="fa-solid fa-pen-to-square text-warning me-2"></i>កែប្រែព័ត៌មាន</h6>
+      <div class="mb-3"><label class="form-label">ឈ្មោះ <span class="text-danger">*</span></label>
+        <input id="e-name" type="text" class="form-control"></div>
+      <div class="mb-3"><label class="form-label">ភូមិ</label>
+        <input id="e-village" type="text" class="form-control"></div>
+      <div class="mb-3"><label class="form-label">លេខទូរស័ព្ទ</label>
+        <input id="e-phone" type="tel" class="form-control" placeholder="0xx xxx xxx"></div>
+      <div class="mb-3"><label class="form-label">ចំនួនព្រះសង្ឃ</label>
+        <select id="e-monkcount" class="form-select">
+          <option value="1">1 អង្គ</option><option value="2">2 អង្គ</option>
+          <option value="3">3 អង្គ</option><option value="4">4 អង្គ</option>
+          <option value="5">5 អង្គ</option><option value="6">6 អង្គ</option>
+          <option value="10">10 អង្គ</option><option value="20">20 អង្គ</option>
+        </select></div>
+      <div class="mb-3"><label class="form-label">លេខរៀង <span class="text-muted fw-normal">(ទុកទំនេរ = គ្មាន)</span></label>
+        <input id="e-queue" type="number" min="1" class="form-control" placeholder="0"></div>
+      <div class="mb-3"><label class="form-label">ស្ថានភាព</label>
+        <select id="e-status" class="form-select">
+          <option value="pending">រង់ចាំ</option>
+          <option value="ready">ត្រៀម (ready)</option>
+          <option value="partial">ចាប់មួយចំណែក (partial)</option>
+          <option value="picked">ចាប់ FULL (picked)</option>
+        </select></div>
+      <div class="mb-3"><label class="form-label">ចាប់ដោយ (លេខព្រះសង្ឃ)</label>
+        <input id="e-pickedBy" type="tel" class="form-control" placeholder="0xx xxx xxx"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="dp-footer">
+    <div id="viewFoot" class="d-flex gap-2 w-100 flex-wrap">
+      <button class="btn btn-success fw-bold" onclick="openQuickPick()">
+        <i class="fa-solid fa-hand-pointer me-1"></i> ចាប់ឲ្យ
+      </button>
+      <button class="btn btn-warning fw-bold text-white" onclick="switchEdit()">
+        <i class="fa-solid fa-pen me-1"></i> កែ
+      </button>
+      <button class="btn btn-outline-info btn-sm fw-bold" onclick="clearQRLock()" title="ដោះសោ QR Scan">
+        <i class="fa-solid fa-qrcode me-1"></i> ដោះ QR
+      </button>
+      <button class="btn btn-danger fw-bold" onclick="openDelModal()">
+        <i class="fa-solid fa-trash me-1"></i> លុប
+      </button>
+      <button class="btn btn-light ms-auto" onclick="closePanel()">បិទ</button>
+    </div>
+    <!-- Quick Pick inline form (inside panel) -->
+    <div id="quickPickFoot" class="w-100" style="display:none">
+      <div class="small fw-bold text-success mb-2">
+        <i class="fa-solid fa-hand-pointer me-1"></i> ចាប់ឲ្យ — ដាក់លេខព្រះសង្ឃ
+      </div>
+      <div class="d-flex gap-2">
+        <input id="qp-phone" type="tel" class="form-control form-control-sm"
+               placeholder="0xx xxx xxx" inputmode="numeric" style="border-radius:8px">
+        <button class="btn btn-success btn-sm fw-bold px-3" onclick="doQuickPick()">
+          <i class="fa-solid fa-check"></i>
+        </button>
+        <button class="btn btn-light btn-sm" onclick="cancelQuickPick()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="qp-err" class="small text-danger mt-1" style="display:none">
+        <i class="fa-solid fa-exclamation-circle me-1"></i>លេខ 9-10 ខ្ទង់
+      </div>
+    </div>
+    <div id="editFoot" style="display:none" class="d-flex gap-2 w-100">
+      <button class="btn btn-primary fw-bold flex-grow-1" onclick="saveEdit()">
+        <i class="fa-solid fa-floppy-disk me-1"></i> រក្សាទុក
+      </button>
+      <button class="btn btn-light" onclick="switchView()">បោះបង់</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add Member -->
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus text-primary me-2"></i>បន្ថែមអ្នកចុះឈ្មោះ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">ឈ្មោះ <span class="text-danger">*</span></label>
+          <input id="nm-name" type="text" class="form-control" placeholder="ឧបាសក / ឧបាសិកា..."></div>
+        <div class="mb-3"><label class="form-label">ភូមិ</label>
+          <input id="nm-village" type="text" class="form-control" placeholder="ភូមិ..."></div>
+        <div class="mb-3"><label class="form-label">លេខទូរស័ព្ទ <span class="text-danger">*</span></label>
+          <input id="nm-phone" type="tel" class="form-control" placeholder="0xx xxx xxx"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">បោះបង់</button>
+        <button type="button" class="btn btn-primary fw-bold px-4" onclick="addMember()">រក្សាទុក</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Generate Queue -->
+<div class="modal fade" id="genModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-hashtag text-warning me-2"></i>ដាក់លេខរៀង</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="text-muted small mb-2">ដំណើរការនេះនឹងដាក់លេខតាមលំដាប់ Timestamp ហើយប្ដូរ status ទៅ <b class="text-info">ready</b>។</p>
+        <p id="gen-count-msg" class="fw-bold text-primary fs-6"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">បោះបង់</button>
+        <button id="genBtn" type="button" class="btn btn-warning fw-bold text-dark px-4" onclick="doGenerate()">
+          <i class="fa-solid fa-play me-1"></i> ចាប់ផ្ដើម
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Confirm Delete -->
+<div class="modal fade" id="delModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-body p-4 text-center">
+        <i class="fa-solid fa-circle-exclamation text-danger fa-3x mb-3"></i>
+        <p class="text-muted mb-1 small">លុបឈ្មោះ</p>
+        <div class="fw-bold fs-6 text-danger mb-2" id="del-name-lbl"></div>
+        <p class="text-muted small mb-0">ចេញពីប្រព័ន្ធ? ការលុបនេះ<br>មិនអាចដំណើរការបន្ថែមទៀតបានទេ!</p>
+      </div>
+      <div class="modal-footer justify-content-center gap-2">
+        <button class="btn btn-light px-4" data-bs-dismiss="modal">បោះបង់</button>
+        <button class="btn btn-danger fw-bold px-4" onclick="doDelete()">
+          <i class="fa-solid fa-trash me-1"></i> លុប
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Admin Manual Pick (ចាប់ជំនួស) -->
+<div class="modal fade" id="adminPickModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">
+          <i class="fa-solid fa-hand-pointer text-success me-2"></i>
+          ចាប់ស្លាកជំនួស (Admin)
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="ap-step-input">
+          <div class="alert alert-info rounded-3 small mb-3">
+            <i class="fa-solid fa-circle-info me-2"></i>
+            ប្រើនៅពេលអ្នកចាប់ ស្គេន QR មិនបាន — Admin ចាប់ <b>ជំនួស</b>ដោយដាក់លេខទូរស័ព្ទ។
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">លេខទូរស័ព្ទព្រះសង្ឃ (អ្នកចាប់)</label>
+            <input id="ap-phone" type="tel" class="form-control"
+                   placeholder="012 345 678" inputmode="numeric"
+                   style="font-size:1.1rem;text-align:center">
+            <div id="ap-phone-err" class="small text-danger mt-1" style="display:none">
+              <i class="fa-solid fa-circle-exclamation me-1"></i>លេខទូរស័ព្ទត្រូវមាន 9-10 ខ្ទង់
+            </div>
+          </div>
+          <div class="mb-1">
+            <div class="p-2 bg-light rounded-3 small" id="ap-ready-info">
+              <i class="fa-solid fa-spinner fa-spin me-1"></i> loading...
+            </div>
+          </div>
+        </div>
+        <div id="ap-step-result" style="display:none">
+          <div class="text-center mb-3">
+            <i class="fa-solid fa-circle-check text-success fa-3x mb-2"></i>
+            <h5 class="fw-bold text-success mb-0">ចាប់ចំម្ចាស់សទ្ធាហើយ!</h5>
+          </div>
+          <div class="rounded-3 p-3" style="background:#f0fdf4">
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <span class="small text-muted fw-bold">លេខរៀង</span>
+              <span class="fw-bold text-success fs-5" id="apr-queue">--</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <span class="small text-muted fw-bold">ឈ្មោះ</span>
+              <span class="fw-bold" id="apr-name">--</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <span class="small text-muted fw-bold">ភូមិ</span>
+              <span id="apr-village">--</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-2">
+              <span class="small text-muted fw-bold">ទូរស័ព្ទ</span>
+              <a id="apr-phone-link" href="#" class="fw-bold text-primary">--</a>
+            </div>
+          </div>
+          <div class="mt-3 p-2 bg-light rounded-3 small text-muted">
+            <i class="fa-solid fa-phone me-1"></i> ចាប់ដោយ (លោក): <b id="apr-monk-phone" class="text-dark"></b>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div id="ap-foot-input" class="d-flex gap-2 w-100">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">បោះបង់</button>
+          <button type="button" class="btn btn-success fw-bold flex-grow-1" id="ap-draw-btn" onclick="doAdminPick()">
+            <i class="fa-solid fa-dharmachakra me-1"></i> ចាប់ស្លាកភ្លាម
+          </button>
+        </div>
+        <div id="ap-foot-result" class="d-flex gap-2 w-100" style="display:none">
+          <button type="button" class="btn btn-light" onclick="resetAdminPick()">ចាប់ម្ដងទៀត</button>
+          <button type="button" class="btn btn-primary fw-bold flex-grow-1" data-bs-dismiss="modal">
+            <i class="fa-solid fa-check me-1"></i> រួចរាល់
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="position-fixed bottom-0 end-0 p-4" style="z-index:9999">
+  <div id="globalToast" class="toast align-items-center text-white border-0">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold">
+        <i id="toastIcon" class="fa-solid fa-circle-check me-2"></i>
+        <span id="toastMsg"></span>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/data.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js')</script>
+<script>
+/* ═══════════════════════════════════════
+   ADMIN MEMBERS — Real-time + Panel
+═══════════════════════════════════════ */
+if(sessionStorage.getItem('isAdmin')!=='true') window.location.href='login.html';
+
+const PAGE_SIZE=15;
+let allMembers=[],filtered=[],currentPage=1,selectedId=null;
+
+const genModal = new bootstrap.Modal(document.getElementById('genModal'));
+const delModal = new bootstrap.Modal(document.getElementById('delModal'));
+let deletePendId = null;
+
+/* ── Init ── */
+(async()=>{
+  const s=await DB.getSettings();
+  document.getElementById('brand-name').textContent=s.templeName;
+  DB.listenToMembers(ms=>{
+    allMembers=ms;
+    applyFilter();
+    if(selectedId){
+      const fresh=allMembers.find(m=>m.id===selectedId);
+      fresh?populatePanel(fresh):closePanel();
+    }
+  });
+  DB.listenToLock(locked=>applyLockUI(locked));
+})();
+
+/* ── Filter ── */
+function applyFilter(){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  const s=document.getElementById('filterStatus').value;
+  filtered=allMembers.filter(m=>{
+    const t=(m.name+(m.village||'')+(m.phone||'')).toLowerCase();
+    return t.includes(q)&&(s==='all'||m.status===s);
+  });
+  currentPage=1;
+  renderTable();
+}
+
+/* ── Render ── */
+function renderTable(){
+  const total=filtered.length;
+  const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  const slice=filtered.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
+  document.getElementById('count-label').textContent=`សរុប ${allMembers.length} នាក់`;
+  document.getElementById('filter-info').textContent=total!==allMembers.length?`(ត្រង ${total})`:'' ;
+
+  const tbody=document.getElementById('members-tbody');
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="7" class="text-center py-5 text-muted">
+      <i class="fa-solid fa-inbox fa-2x d-block mb-2 opacity-25"></i>មិនមានទិន្នន័យ</td></tr>`;
+  } else {
+    tbody.innerHTML=slice.map((m,i)=>`
+      <tr class="${m.id===selectedId?'row-selected':''}" onclick="openPanel('${m.id}')">
+        <td class="text-muted">${(currentPage-1)*PAGE_SIZE+i+1}</td>
+        <td><div class="fw-bold">${m.name}</div><div class="small text-muted">${m.village||''}</div></td>
+        <td class="small fw-bold">
+          ${'🙏'.repeat(Math.min(m.picksDone||0,3))}${(m.monkCount||1)>(m.picksDone||0)?('○'.repeat(Math.min((m.monkCount||1)-(m.picksDone||0),3))):''}
+          <span style="font-size:.7rem;color:#6b7280"> ${m.picksDone||0}/${m.monkCount||1}</span>
+        </td>
+        <td>${m.queueNumber?`<span class="badge bg-primary-subtle text-primary fw-bold">${String(m.queueNumber).padStart(2,'0')}</span>`:'<span class="text-muted small">—</span>'}</td>
+        <td>${statusBadge(m.status)}</td>
+        <td class="small fw-semibold">${m.pickedBy||'<span class="text-muted">—</span>'}</td>
+        <td class="text-end" onclick="event.stopPropagation()">
+          <button class="btn btn-sm btn-light text-warning me-1" onclick="openPanel('${m.id}',true)" title="កែ"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm btn-light text-danger" onclick="openDelModal('${m.id}')" title="លុប"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`).join('');
+  }
+  // Pagination
+  const pBar=document.getElementById('paginationBar');
+  pBar.style.display=total>PAGE_SIZE?'flex':'none';
+  if(total>PAGE_SIZE){
+    const from=Math.min((currentPage-1)*PAGE_SIZE+1,total),to=Math.min(currentPage*PAGE_SIZE,total);
+    document.getElementById('paginationInfo').textContent=`${from}–${to} / ${total}`;
+    let ph=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goPage(${currentPage-1});return false">‹</a></li>`;
+    for(let p=1;p<=pages;p++) ph+=`<li class="page-item ${p===currentPage?'active':''}"><a class="page-link" href="#" onclick="goPage(${p});return false">${p}</a></li>`;
+    ph+=`<li class="page-item ${currentPage===pages?'disabled':''}"><a class="page-link" href="#" onclick="goPage(${currentPage+1});return false">›</a></li>`;
+    document.getElementById('paginationList').innerHTML=ph;
+  }
+}
+function goPage(p){currentPage=p;renderTable()}
+
+/* ── Panel ── */
+function openPanel(id,goEdit=false){
+  const m=allMembers.find(x=>x.id===id);
+  if(!m)return;
+  selectedId=id;
+  populatePanel(m);
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('mainWrapper').classList.add('panel-open');
+  renderTable();
+  goEdit?switchEdit():switchView();
+}
+
+function populatePanel(m){
+  const colors={picked:'#22c55e',ready:'#3b82f6',pending:'#f59e0b'};
+  const av=document.getElementById('dp-avatar');
+  av.style.background=colors[m.status]||'#94a3b8';
+  av.textContent=m.name?m.name.slice(0,1):'?';
+  document.getElementById('dp-name-big').textContent=m.name||'';
+  document.getElementById('dp-badge-big').innerHTML=statusBadge(m.status);
+  document.getElementById('dp-sub').textContent='ID: '+m.id.slice(0,10)+'...';
+
+  // Queue
+  const qBox=document.getElementById('dp-queue-box');
+  if(m.queueNumber){qBox.style.display='block';document.getElementById('dp-queue-num').textContent=String(m.queueNumber).padStart(2,'0');}
+  else qBox.style.display='none';
+
+  // Picked
+  const pkBox=document.getElementById('dp-picked-box');
+  if(m.status==='picked'&&m.pickedBy){
+    pkBox.style.display='block';
+    document.getElementById('dp-pickedBy').innerHTML=`<a href="tel:${m.pickedBy}" class="text-success text-decoration-none">${m.pickedBy} <i class="fa-solid fa-phone fa-sm"></i></a>`;
+  } else pkBox.style.display='none';
+
+  // QR lock status indicator
+  const qrLockDiv = document.getElementById('dp-qr-lock') || (() => {
+    const d = document.createElement('div'); d.id='dp-qr-lock';
+    document.getElementById('dp-info').parentNode.insertBefore(d, document.getElementById('dp-info'));
+    return d;
+  })();
+  if(m.qrVerified){
+    qrLockDiv.innerHTML=`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:8px 12px;font-size:.75rem;color:#92400e;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      <i class="fa-solid fa-qrcode"></i> <span>QR ត្រូវបានស្គេនរួចហើយ</span>
+    </div>`;
+  } else {
+    qrLockDiv.innerHTML=`<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 12px;font-size:.75rem;color:#166534;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      <i class="fa-solid fa-qrcode"></i> <span>QR ទំនេរ (អាចស្គេន)</span>
+    </div>`;
+  }
+
+  // Info rows
+  const picksHtml = (m.picks&&m.picks.length)
+    ? m.picks.map((p,i)=>`<div style="font-size:.75rem;color:#4b5563;margin-top:2px">🙏 ${i+1}. ${p.monkPhone||'—'}</div>`).join('')
+    : '<span style="color:#94a3b8">—</span>';
+  document.getElementById('dp-info').innerHTML=[
+    ['ភូមិ',m.village||'—'],
+    ['ព្រះសង្ឃ',`${m.monkCount||1} អង្គ (ចាប់ ${m.picksDone||0})`],
+    ['ចាប់ដោយ',picksHtml],
+    ['កាលបរិច្ឆេទ',m.date||'—'],
+  ].map(([k,v])=>`<div class="info-row"><span class="info-label">${k}</span><span class="info-val">${v}</span></div>`).join('');
+
+  // Prefill edit
+  document.getElementById('e-name').value=m.name||'';
+  document.getElementById('e-village').value=m.village||'';
+  document.getElementById('e-monkcount').value=m.monkCount||1;
+  document.getElementById('e-queue').value=m.queueNumber||'';
+  document.getElementById('e-phone').value=m.phone||'';
+  document.getElementById('e-status').value=m.status||'pending';
+  document.getElementById('e-pickedBy').value=(m.picks&&m.picks.length?m.picks.map(p=>p.monkPhone).join(', '):m.pickedBy||'');
+}
+
+function closePanel(){
+  selectedId=null;
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('mainWrapper').classList.remove('panel-open');
+  renderTable();
+}
+
+function switchEdit(){
+  document.getElementById('viewSec').style.display='none';
+  document.getElementById('editSec').style.display='block';
+  document.getElementById('viewFoot').style.display='none';
+  document.getElementById('editFoot').style.display='flex';
+  document.getElementById('dp-title').textContent='កែប្រែព័ត៌មាន';
+}
+function switchView(){
+  document.getElementById('viewSec').style.display='block';
+  document.getElementById('editSec').style.display='none';
+  document.getElementById('viewFoot').style.display='flex';
+  document.getElementById('editFoot').style.display='none';
+  document.getElementById('dp-title').textContent='ព័ត៌មានលម្អិត';
+}
+
+/* ── Save Edit ── */
+async function saveEdit(){
+  if(!selectedId)return;
+  const name=document.getElementById('e-name').value.trim();
+  if(!name){showToast('សូមបំពេញឈ្មោះ!','danger');return;}
+  const q=document.getElementById('e-queue').value;
+  try{
+    const updateData = {
+      name,
+      village:  document.getElementById('e-village').value.trim(),
+      phone:    document.getElementById('e-phone').value.trim(),
+      status:   document.getElementById('e-status').value,
+      pickedBy: document.getElementById('e-pickedBy').value.trim(),
+      monkCount: parseInt(document.getElementById('e-monkcount').value) || 1,
+    };
+    if (q && parseInt(q) > 0) {
+      updateData.queueNumber = parseInt(q);
+    } else {
+      updateData.queueNumber = firebase.firestore.FieldValue.delete();
+    }
+    await db.collection('members').doc(selectedId).update(updateData);
+    showToast('កែប្រែជោគជ័យ!');
+    switchView();
+  }catch(e){showToast('កំហុស: '+e.message,'danger');}
+}
+
+/* ── Delete ── */
+function openDelModal(id){
+  deletePendId=id||selectedId;
+  const m=allMembers.find(x=>x.id===deletePendId);
+  document.getElementById('del-name-lbl').textContent=m?m.name:'—';
+  delModal.show();
+}
+function openDelModal2(){openDelModal(selectedId);}
+async function doDelete(){
+  if(!deletePendId)return;
+  try{
+    await db.collection('members').doc(deletePendId).delete();
+    delModal.hide();
+    if(selectedId===deletePendId)closePanel();
+    showToast('លុបឈ្មោះជោគជ័យ!','danger');
+    deletePendId=null;
+  }catch(e){showToast('កំហុស: '+e.message,'danger');}
+}
+
+/* ── Add Member ── */
+async function addMember(){
+  const name=document.getElementById('nm-name').value.trim();
+  const phone=document.getElementById('nm-phone').value.trim();
+  if(!name||!phone){showToast('សូមបំពេញឈ្មោះ និងទូរស័ព្ទ!','danger');return;}
+  try{
+    await DB.addMember(name,document.getElementById('nm-village').value.trim(),phone);
+    ['nm-name','nm-village','nm-phone'].forEach(id=>document.getElementById(id).value='');
+    bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
+    showToast('បន្ថែមជោគជ័យ!');
+  }catch(e){showToast('កំហុស: '+e.message,'danger');}
+}
+
+/* ── Generate Queue Numbers ── */
+function openGenModal(){
+  const cnt=allMembers.filter(m=>m.status==='pending').length;
+  document.getElementById('gen-count-msg').textContent=`អ្នករង់ចាំ ${cnt} នាក់ (pending) នឹងទទួលបានលេខ`;
+  genModal.show();
+}
+async function doGenerate(){
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;
+  btn.innerHTML=`<span class="spinner-border spinner-border-sm me-1"></span>...`;
+  try{
+    const n=await DB.generateMemberNumbers();
+    genModal.hide();
+    showToast(`ដាក់លេខ ${n} នាក់ ជោគជ័យ!`);
+  }catch(e){showToast('កំហុស: '+e.message,'danger');}
+  finally{btn.disabled=false;btn.innerHTML=`<i class="fa-solid fa-play me-1"></i> ចាប់ផ្ដើម`;}
+}
+
+/* ── Lock ── */
+function applyLockUI(locked){
+  const btn=document.getElementById('lockBtn'),bar=document.getElementById('lockBar');
+  if(locked){
+    btn.innerHTML=`<i class="fa-solid fa-unlock me-1"></i> បើកការចុះឈ្មោះ`;
+    btn.className='btn btn-success rounded-pill px-3 fw-bold';
+    bar.style.display='flex';
+  }else{
+    btn.innerHTML=`<i class="fa-solid fa-lock me-1"></i> បិទការចុះឈ្មោះ`;
+    btn.className='btn btn-danger rounded-pill px-3 fw-bold';
+    bar.style.display='none';
+  }
+}
+async function toggleLock(){
+  const isLocked=document.getElementById('lockBtn').classList.contains('btn-success');
+  await DB.toggleLock(!isLocked);
+  showToast(!isLocked?'ប្រព័ន្ធបិទហើយ!':'ប្រព័ន្ធបើករួច!',!isLocked?'danger':'success');
+}
+
+/* ── Export Excel (.xlsx) ── */
+function exportExcel(){
+  const statusLabel = { picked:'ចាប់រួច', ready:'មានលេខ', pending:'កំពុងរង់ចាំ' };
+
+  // Build worksheet data
+  const headers = ['#','ឈ្មោះ','ភូមិ','ព្រះសង្ឃ (ចំនួន)','ចាប់ហើយ','លេខរៀង','ចាប់ដោយ','ស្ថានភាព','កាលបរិច្ឆេទ'];
+  const rows = allMembers.map((m,i)=>[
+    i+1,
+    m.name    || '',
+    m.village || '',
+    m.monkCount || 1,
+    m.picksDone || 0,
+    m.queueNumber || '',
+    (m.picks||[]).map(p=>p.monkPhone).join(' / ') || m.pickedBy || '',
+    statusLabel[m.status] || m.status || '',
+    m.date    || '',
+  ]);
+
+  const wsData = [headers, ...rows];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Column widths
+  ws['!cols'] = [
+    {wch:4},{wch:24},{wch:18},{wch:14},
+    {wch:10},{wch:14},{wch:14},{wch:14}
+  ];
+
+  // Style header row bold (basic)
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for(let C=range.s.c; C<=range.e.c; C++){
+    const addr = XLSX.utils.encode_cell({r:0,c:C});
+    if(!ws[addr]) continue;
+    ws[addr].s = { font:{bold:true}, fill:{fgColor:{rgb:'D4AF37'}} };
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'ម្ចាស់សទ្ធា');
+
+  const date = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `donors_${date}.xlsx`);
+  showToast('Export Excel ជោគជ័យ!');
+}
+
+/* ══ QUICK PICK (ចាប់ឲ្យ) from panel ══ */
+function openQuickPick(){
+  // Show only if member is status=ready
+  const m = allMembers.find(x=>x.id===selectedId);
+  if(!m) return;
+  if(m.status!=='ready'){
+    showToast('ម្ចាស់សទ្ធានេះ status មិនមែន ready ទេ! — ត្រូវ ready ដើម្បីចាប់','warning');
+    return;
+  }
+  document.getElementById('viewFoot').style.display='none';
+  document.getElementById('quickPickFoot').style.display='block';
+  document.getElementById('qp-phone').value='';
+  document.getElementById('qp-err').style.display='none';
+  setTimeout(()=>document.getElementById('qp-phone').focus(),150);
+}
+
+function cancelQuickPick(){
+  document.getElementById('quickPickFoot').style.display='none';
+  document.getElementById('viewFoot').style.display='flex';
+}
+
+async function doQuickPick(){
+  const phone = document.getElementById('qp-phone').value.trim().replace(/\s/g,'');
+  const errEl = document.getElementById('qp-err');
+  if(!/^[0-9]{9,10}$/.test(phone)){errEl.style.display='block';return;}
+  errEl.style.display='none';
+
+  const m = allMembers.find(x=>x.id===selectedId);
+  if(!m){showToast('member not found','danger');return;}
+
+  try{
+    await db.collection('members').doc(selectedId).update({
+      status  : 'picked',
+      pickedBy: phone,
+    });
+    cancelQuickPick();
+    showToast(`ចាប់ "${m.name}" ឲ្យ ${phone} ជោគជ័យ!`);
+  }catch(e){
+    showToast('កំហុស: '+e.message,'danger');
+  }
+}
+
+/* ── Clear QR Lock (reset qrVerified on a member) ── */
+async function clearQRLock(){
+  if(!selectedId) return;
+  const m = allMembers.find(x=>x.id===selectedId);
+  if(!m) return;
+  if(!m.qrVerified){ showToast('QR lock មិនទាន់ស្គេននៅឡើយ','warning'); return; }
+  try{
+    await db.collection('members').doc(selectedId).update({
+      qrVerified: false,
+      qrVerifiedAt: null,
+      qrVerifiedDevice: null,
+    });
+    showToast('ដោះសោ QR ជោគជ័យ — ស្គេនបានម្ដងទៀត!');
+  }catch(e){
+    showToast('Error: '+e.message,'danger');
+  }
+}
+
+function handleLogout(e){e.preventDefault();sessionStorage.removeItem('isAdmin');window.location.href='login.html';}
+
+/* ══ ADMIN MANUAL PICK ══ */
+const adminPickModal = new bootstrap.Modal(document.getElementById('adminPickModal'));
+
+function openAdminPickModal() {
+  resetAdminPick();
+  const ready = allMembers.filter(m=>m.status==='ready').length;
+  const info  = document.getElementById('ap-ready-info');
+  const drawBtn = document.getElementById('ap-draw-btn');
+  if(ready===0){
+    info.innerHTML=`<i class="fa-solid fa-circle-exclamation text-warning me-1"></i> មិនមាន ready ទេ — សូមដាក់លេខរៀងជាមុន`;
+    drawBtn.disabled=true;
+  } else {
+    info.innerHTML=`<i class="fa-solid fa-circle-check text-success me-1"></i> ម្ចាស់សទ្ធា ready <b class="text-success">${ready} នាក់</b>`;
+    drawBtn.disabled=false;
+  }
+  adminPickModal.show();
+  setTimeout(()=>document.getElementById('ap-phone').focus(),400);
+}
+
+function resetAdminPick(){
+  document.getElementById('ap-step-input').style.display='block';
+  document.getElementById('ap-step-result').style.display='none';
+  document.getElementById('ap-foot-input').style.display='flex';
+  document.getElementById('ap-foot-result').style.display='none';
+  document.getElementById('ap-phone').value='';
+  document.getElementById('ap-phone-err').style.display='none';
+}
+
+async function doAdminPick(){
+  const phone=document.getElementById('ap-phone').value.trim().replace(/\s/g,'');
+  const errEl=document.getElementById('ap-phone-err');
+  const drawBtn=document.getElementById('ap-draw-btn');
+  if(!/^[0-9]{9,10}$/.test(phone)){errEl.style.display='block';return;}
+  errEl.style.display='none';
+  drawBtn.disabled=true;
+  drawBtn.innerHTML=`<span class="spinner-border spinner-border-sm me-1"></span> កំពុងចាប់...`;
+  try{
+    const result=await DB.monkPick(phone);
+    if(!result){
+      showToast('អស់ម្ចាស់សទ្ធា (ready=0)!','warning');
+      drawBtn.disabled=false;
+      drawBtn.innerHTML=`<i class="fa-solid fa-dharmachakra me-1"></i> ចាប់ស្លាកភ្លាម`;
+      return;
+    }
+    const qn=result.queueNumber;
+    document.getElementById('apr-queue').textContent=qn?String(qn).padStart(2,'0'):'--';
+    document.getElementById('apr-name').textContent=result.name||'--';
+    document.getElementById('apr-village').textContent=result.village||'--';
+    document.getElementById('apr-phone-link').textContent=result.phone||'--';
+    document.getElementById('apr-phone-link').href='tel:'+(result.phone||'');
+    document.getElementById('apr-monk-phone').textContent=phone;
+    document.getElementById('ap-step-input').style.display='none';
+    document.getElementById('ap-step-result').style.display='block';
+    document.getElementById('ap-foot-input').style.display='none';
+    document.getElementById('ap-foot-result').style.display='flex';
+    showToast('ចាប់ស្លាកជោគជ័យ!');
+  }catch(e){
+    showToast('កំហុស: '+e.message,'danger');
+    drawBtn.disabled=false;
+    drawBtn.innerHTML=`<i class="fa-solid fa-dharmachakra me-1"></i> ចាប់ស្លាកភ្លាម`;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>វត្តទេពបុរី — បញ្ជីឈ្មោះម្ចាស់សទ្ធា</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&family=Moul&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --navy-deep: #0D1B2A;
+            --gold: #D4AF37;
+            --gold-light: #F4D03F;
+            --status-bg: #FFAB40;
+            --status-text: #E65100;
+            --glass-border: rgba(212, 175, 55, 0.2);
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background: #f1f5f9;
+            color: var(--navy-deep);
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .font-moul { font-family: 'Moul', cursive; }
+
+        /* --- Header --- */
+        .page-header {
+            background: white;
+            border-bottom: 2px solid var(--gold);
+            padding: 12px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 500;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, var(--gold), #b8962d);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        /* --- List & Grid --- */
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .member-card {
+            background: white;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .member-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        /* ── PREMIMUM DIGITAL CARD (Deep Navy Matte) ── */
+        .digital-card {
+            background-color: var(--navy-deep);
+            background-image: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 80%);
+            border-radius: 25px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Corner Ornaments */
+        .dc-ornament {
+            position: absolute;
+            color: var(--gold);
+            font-size: 24px;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .dc-ornament-tl { top: 15px; left: 15px; transform: rotate(-45deg); }
+        .dc-ornament-tr { top: 15px; right: 15px; transform: rotate(45deg); }
+        .dc-ornament-bl { bottom: 15px; left: 15px; transform: rotate(-135deg); }
+        .dc-ornament-br { bottom: 15px; right: 15px; transform: rotate(135deg); }
+
+        .dc-body { padding: 35px 25px; position: relative; z-index: 2; }
+
+        .dc-rooster-motif {
+            width: 80px; height: 80px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px;
+        }
+
+        .dc-name {
+            font-family: 'Moul', cursive;
+            color: var(--gold);
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Label and Value styles */
+        .dc-info-label { font-size: 0.75rem; color: rgba(212, 175, 55, 0.6); text-transform: uppercase; }
+        .dc-info-value { font-size: 0.95rem; color: var(--gold); font-weight: 600; }
+
+        /* Status Label Capsule */
+        .dc-status-badge {
+            background: var(--status-bg);
+            color: var(--status-text);
+            padding: 5px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        /* Gradient Divider */
+        .dc-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 20px 0;
+            opacity: 0.5;
+        }
+
+        /* QR Area */
+        .dc-qr-box {
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            display: inline-block;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+        .dc-qr-label { color: var(--gold); font-size: 0.7rem; line-height: 1.5; margin-top: 10px; }
+
+        /* Metallic Gold Button */
+        .btn-save-card {
+            background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            border: none;
+            color: #0D1B2A;
+            font-weight: 800;
+            padding: 12px 30px;
+            border-radius: 50px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+            transition: 0.3s;
+        }
+        .btn-save-card:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(212, 175, 55, 0.6); }
+
+        /* Overlay for saving */
+        .save-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 1000; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .save-overlay.show { display: flex; }
+    </style>
+</head>
+<body>
+
+<header class="page-header d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-2">
+        <img src="assets/images/Gemini_Generated_Image_.png" style="width: 40px; border-radius: 50%;" alt="logo">
+        <h5 class="font-moul mb-0 text-primary" style="font-size: 1rem;">វត្តទេពបុរី</h5>
+    </div>
+    <a href="register.html" class="btn-register text-decoration-none">ចុះឈ្មោះ</a>
+</header>
+
+<div class="container py-4">
+    <div class="members-grid" id="membersGrid"></div>
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 bg-transparent">
+            <div class="modal-body p-0">
+                
+                <div class="digital-card" id="digitalCard">
+                    <div class="dc-ornament dc-ornament-tl">🔱</div>
+                    <div class="dc-ornament dc-ornament-tr">🔱</div>
+                    <div class="dc-ornament dc-ornament-bl">🔱</div>
+                    <div class="dc-ornament dc-ornament-br">🔱</div>
+
+                    <div class="dc-body text-center">
+                        <div class="dc-rooster-motif">🐓</div>
+                        
+                        <div class="dc-name" id="dc-name">អ្នកស្រី ជី ចន្ទវាសនា, អ្នកស្រី ហេង ដានី ព្រមទាំងបុត្រ</div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6 text-start">
+                                <div class="dc-info-label">ភូមិ</div>
+                                <div class="dc-info-value" id="dc-village">ភ្នំពេញ</div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div class="dc-info-label">ចំនួនព្រះសង្ឃ</div>
+                                <div class="dc-info-value" id="dc-monkCount">1 អង្គ</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="dc-info-label mb-1">ស្ថានភាព</div>
+                            <div class="dc-status-badge">រង់ចាំ</div>
+                        </div>
+
+                        <div class="dc-divider"></div>
+
+                        <div class="dc-qr-box mb-3">
+                            <div id="dc-qr"></div>
+                        </div>
+
+                        <div class="dc-qr-label font-moul">
+                            ស្កែន QR ដើម្បីផ្ទៀងផ្ទាត់ក្នុងប្រព័ន្ធវត្តទេពបុរី<br>
+                            <span style="font-family: 'Kantumruy Pro'; opacity: 0.7;">សុពលភាព៖ ១៨ មេសា ២០២៦</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button class="btn-save-card" onclick="saveCard()">
+                        <i class="fa-solid fa-download me-2"></i> Save Card
+                    </button>
+                    <div class="mt-3">
+                        <button class="btn btn-link text-white-50 btn-sm text-decoration-none" data-bs-dismiss="modal">បិទ</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="save-overlay" id="saveOverlay" onclick="this.classList.remove('show')">
+    <img id="saveImg" src="" style="max-width: 90%; border-radius: 20px;">
+    <p class="text-white mt-3">ចុចឱ្យជាប់លើរូបភាពដើម្បី Save ទុក</p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+
+<script>
+const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+
+DB.listenToMembers(members => {
+    const grid = document.getElementById('membersGrid');
+    grid.innerHTML = members.map(m => `
+        <div class="member-card" onclick="openDetail('${m.id}')">
+            <div class="fw-bold">${m.name}</div>
+            <div class="small text-muted">${m.village || '---'}</div>
+        </div>
+    `).join('');
+    window.allMembers = members;
+});
+
+function openDetail(id) {
+    const m = window.allMembers.find(x => x.id === id);
+    if (!m) return;
+
+    // Populate data - names are hardcoded in the card HTML based on user preference
+    // document.getElementById('dc-name').textContent = m.name; // Uncommon due to fixed name in user request
+    // document.getElementById('dc-village').textContent = m.village || '---'; // Fixed in user request
+    // document.getElementById('dc-monkCount').textContent = (m.monkCount || 1) + ' អង្គ'; // Common
+
+    // Generate QR
+    const qrEl = document.getElementById('dc-qr');
+    qrEl.innerHTML = '';
+    new QRCode(qrEl, {
+        text: `https://tepborey.web.app/verify.html?id=${id}`,
+        width: 100, height: 100,
+        colorDark: "#0D1B2A", colorLight: "#ffffff"
+    });
+
+    detailModal.show();
+}
+
+async function saveCard() {
+    const card = document.getElementById('digitalCard');
+    const canvas = await html2canvas(card, { scale: 3, backgroundColor: '#0D1B2A' });
+    document.getElementById('saveImg').src = canvas.toDataURL('image/png');
+    document.getElementById('saveOverlay').classList.add('show');
+}
+</script>
+
+</body>
+</html>
